@@ -4,6 +4,7 @@ import VaccineManager from "../components/admin/VaccineManager";
 import MedicineManager from "../components/admin/MedicineManager";
 import AppointmentManager from "../components/admin/AppointmentManager";
 import { useState } from "react";
+import React from "react";
 
 const AdminDashboard = () => {
   const { user, logout } = useAuth();

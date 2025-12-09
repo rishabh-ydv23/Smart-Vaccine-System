@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useAuth } from "../context/AuthContext";
 import api from "../api/axios";
 import VaccineList from "../components/VaccineList";
-
+import React from "react";
 const Dashboard = () => {
   const { user, logout } = useAuth();
   const [appointments, setAppointments] = useState([]);
