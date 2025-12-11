@@ -19,8 +19,9 @@ const Register = () => {
       await api.post("/auth/register", form);
       setAlert("Account Created Successfully!");
       setTimeout(() => navigate("/login"), 1200);
-    } catch {
-      setAlert("Something went wrong");
+    } catch (err) {
+      const errorMsg = err.response?.data?.message || "Something went wrong";
+      setAlert(errorMsg);
     }
   };
 
@@ -48,8 +49,11 @@ const Register = () => {
 
         {/* Alert */}
         {alert && (
-          <div className="bg-green-100/80 border-l-4 border-green-700 
-          text-green-800 p-3 rounded-lg mb-4 shadow">
+          <div className={`border-l-4 p-3 rounded-lg mb-4 shadow ${
+            alert.includes('Successfully') 
+              ? 'bg-green-100/80 border-green-700 text-green-800' 
+              : 'bg-red-100/80 border-red-700 text-red-800'
+          }`}>
             <p className="text-sm font-medium">{alert}</p>
           </div>
         )}

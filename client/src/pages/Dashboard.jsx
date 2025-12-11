@@ -22,6 +22,20 @@ const Dashboard = () => {
     fetchAppointments();
   }, []);
 
+  // ⭐ Clean, user-friendly date/time format
+  const formatDateTime = (dateString) => {
+    const date = new Date(dateString);
+
+    return date.toLocaleString("en-GB", {
+      day: "2-digit",
+      month: "short",
+      year: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+      hour12: true,
+    });
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-500 p-6">
       
@@ -77,9 +91,12 @@ const Dashboard = () => {
                       <td className="py-3 px-4 font-medium text-gray-800 text-sm">
                         {a.vaccineId?.name || "N/A"}
                       </td>
+
+                      {/* ⭐ Updated user-friendly time */}
                       <td className="py-3 px-4 text-gray-600 text-sm">
-                        {new Date(a.date).toLocaleString()}
+                        {formatDateTime(a.date)}
                       </td>
+
                       <td className="py-3 px-4">
                         <span
                           className={`px-3 py-1 text-xs font-semibold rounded-full shadow-sm ${
@@ -101,7 +118,7 @@ const Dashboard = () => {
           )}
         </section>
 
-        {/* New Appointment / Vaccine List */}
+        {/* Vaccine Booking Section */}
         <section className="bg-white/90 backdrop-blur-lg rounded-2xl shadow-xl p-6 border border-white/30">
           <h3 className="text-xl font-bold text-gray-800 mb-4">
             Book New Appointment
