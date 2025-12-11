@@ -20,7 +20,12 @@ const Login = () => {
     try {
       const { data } = await api.post("/auth/login", form);
       login(data);
-      navigate("/");
+      // Redirect based on user role
+      if (data.user.role === 'admin') {
+        navigate("/admin");
+      } else {
+        navigate("/");
+      }
     } catch (err) {
       setError("Invalid Credentials");
     }

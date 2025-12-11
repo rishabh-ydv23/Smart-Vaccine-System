@@ -128,16 +128,6 @@ const AdminDashboard = () => {
           >
             <FiCalendar /> Manage Appointments
           </button>
-
-          <button
-            onClick={() => {
-              navigate('/');
-              setSidebarOpen(false);
-            }}
-            className="w-full flex items-center gap-3 px-4 py-3 rounded-lg font-medium text-white hover:bg-white/10 transition-all"
-          >
-            <FiUser /> User Dashboard
-          </button>
         </nav>
 
         <div className="pt-6 mt-6 border-t border-white/30">
@@ -247,10 +237,10 @@ const AdminDashboard = () => {
                 </button>
                 <button
                   onClick={() => navigate('/')}
-                  className="p-4 bg-gradient-to-r from-gray-600 to-gray-700 hover:from-gray-700 hover:to-gray-800 text-white rounded-lg font-semibold shadow-md transition-all text-left"
+                  className="p-4 bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white rounded-lg font-semibold shadow-md transition-all text-left"
                 >
-                  <p className="text-sm opacity-90">Switch to</p>
-                  <p className="text-lg">User View</p>
+                  <p className="text-sm opacity-90">View System As</p>
+                  <p className="text-lg">Regular User</p>
                 </button>
               </div>
             </section>

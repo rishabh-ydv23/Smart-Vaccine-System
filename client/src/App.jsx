@@ -12,9 +12,26 @@ const PrivateRoute = ({ children }) => {
   return user ? children : <Navigate to="/login" replace />;
 };
 
+const AdminRoute = ({ children }) => {
+  const { user } = useAuth();
+  if (!user) return <Navigate to="/login" replace />;
+  if (user.role !== 'admin') return <Navigate to="/" replace />;
+  return children;
+};
+
+const UserRoute = ({ children }) => {
+  const { user } = useAuth();
+  if (!user) return <Navigate to="/login" replace />;
+  if (user.role === 'admin') return <Navigate to="/admin" replace />;
+  return children;
+};
+
 const PublicRoute = ({ children }) => {
   const { user } = useAuth();
-  return user ? <Navigate to="/" replace /> : children;
+  if (!user) return children;
+  // Redirect based on role
+  if (user.role === 'admin') return <Navigate to="/admin" replace />;
+  return <Navigate to="/" replace />;
 };
 
 function App() {
@@ -29,8 +46,8 @@ function App() {
         <Routes>
           <Route path="/login" element={<PublicRoute><Login /></PublicRoute>} />
           <Route path="/register" element={<PublicRoute><Register /></PublicRoute>} />
-          <Route path="/" element={<PrivateRoute><Dashboard /></PrivateRoute>} />
-          <Route path="/admin" element={<PrivateRoute><AdminDashboard /></PrivateRoute>} />
+          <Route path="/" element={<UserRoute><Dashboard /></UserRoute>} />
+          <Route path="/admin" element={<AdminRoute><AdminDashboard /></AdminRoute>} />
         </Routes>
       </BrowserRouter>
     </AuthProvider>
