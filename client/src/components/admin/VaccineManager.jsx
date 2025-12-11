@@ -37,29 +37,49 @@ const VaccineManager = () => {
       <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
         <h3 className="text-lg font-bold text-gray-800 mb-3">Add New Vaccine</h3>
         
+        <div className="mb-3 bg-blue-50 border-l-4 border-blue-500 p-3 rounded">
+          <p className="text-blue-800 font-medium">📝 Instructions</p>
+          <ul className="text-blue-700 text-sm mt-1 list-disc pl-5 space-y-1">
+            <li>Enter the full vaccine name (e.g., "COVID-19 Vaccine (Pfizer)")</li>
+            <li>Doses Required: Number of shots needed (1 or 2 typically)</li>
+            <li>Stock Quantity: How many doses are available</li>
+          </ul>
+        </div>
+
         <div className="grid md:grid-cols-3 gap-3 mb-3">
-          <input
-            placeholder="Vaccine Name"
-            value={form.name}
-            onChange={(e) => setForm({ ...form, name: e.target.value })}
-            className="border border-gray-300 px-4 py-2.5 rounded-lg focus:border-green-500 focus:ring-1 focus:ring-green-500 transition-all outline-none"
-          />
+          <div>
+            <label className="block text-xs font-medium text-gray-700 mb-1">Vaccine Name *</label>
+            <input
+              placeholder="e.g., COVID-19 Vaccine (Pfizer)"
+              value={form.name}
+              onChange={(e) => setForm({ ...form, name: e.target.value })}
+              className="w-full border border-gray-300 px-4 py-2.5 rounded-lg focus:border-green-500 focus:ring-1 focus:ring-green-500 transition-all outline-none"
+            />
+          </div>
 
-          <input
-            type="number"
-            placeholder="Dose Required"
-            value={form.doseRequired}
-            onChange={(e) => setForm({ ...form, doseRequired: e.target.value })}
-            className="border border-gray-300 px-4 py-2.5 rounded-lg focus:border-green-500 focus:ring-1 focus:ring-green-500 transition-all outline-none"
-          />
+          <div>
+            <label className="block text-xs font-medium text-gray-700 mb-1">Doses Required *</label>
+            <input
+              type="number"
+              min="1"
+              placeholder="e.g., 1 or 2"
+              value={form.doseRequired}
+              onChange={(e) => setForm({ ...form, doseRequired: parseInt(e.target.value) || 1 })}
+              className="w-full border border-gray-300 px-4 py-2.5 rounded-lg focus:border-green-500 focus:ring-1 focus:ring-green-500 transition-all outline-none"
+            />
+          </div>
 
-          <input
-            type="number"
-            placeholder="Stock Quantity"
-            value={form.availableQuantity}
-            onChange={(e) => setForm({ ...form, availableQuantity: e.target.value })}
-            className="border border-gray-300 px-4 py-2.5 rounded-lg focus:border-green-500 focus:ring-1 focus:ring-green-500 transition-all outline-none"
-          />
+          <div>
+            <label className="block text-xs font-medium text-gray-700 mb-1">Stock Quantity *</label>
+            <input
+              type="number"
+              min="0"
+              placeholder="e.g., 100"
+              value={form.availableQuantity}
+              onChange={(e) => setForm({ ...form, availableQuantity: parseInt(e.target.value) || 0 })}
+              className="w-full border border-gray-300 px-4 py-2.5 rounded-lg focus:border-green-500 focus:ring-1 focus:ring-green-500 transition-all outline-none"
+            />
+          </div>
         </div>
 
         <button 
@@ -94,10 +114,14 @@ const VaccineManager = () => {
                       v.availableQuantity > 20 ? 'bg-yellow-100 text-yellow-700' :
                       'bg-red-100 text-red-700'
                     }`}>
-                      {v.availableQuantity}
+                      {v.availableQuantity} units
                     </span>
                   </td>
-                  <td className="py-3 px-4 text-gray-600 text-sm">{v.doseRequired}</td>
+                  <td className="py-3 px-4 text-gray-600 text-sm">
+                    <span className="bg-blue-100 text-blue-800 px-2 py-1 rounded-full text-xs font-medium">
+                      {v.doseRequired} dose{v.doseRequired > 1 ? 's' : ''}
+                    </span>
+                  </td>
                   <td className="py-3 px-4">
                     <button 
                       onClick={() => deleteVaccine(v._id)}
