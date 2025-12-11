@@ -17,10 +17,30 @@ router.post('/', protect, async (req, res) => {
       return res.status(400).json({ message: 'Vaccine out of stock' });
     }
 
+    // Convert date to Date object
+    const appointmentDate = new Date(date);
+
+    // Calculate the 5-minute slot range
+    const slotStart = new Date(appointmentDate);
+    const slotEnd = new Date(appointmentDate.getTime() + 5 * 60000); // 5 minutes later
+
+    // Check if this exact 5-minute slot is already booked by another user
+    const existingAppointment = await Appointment.findOne({
+      vaccineId,
+      date: appointmentDate,
+      status: { $in: ['pending', 'approved', 'completed'] } // Don't count rejected appointments
+    });
+
+    if (existingAppointment) {
+      return res.status(400).json({ 
+        message: 'This time slot is already booked by another user. Please select a different time (slots are 5 minutes each).' 
+      });
+    }
+
     const appointment = await Appointment.create({
       userId: req.user._id,
       vaccineId,
-      date,
+      date: appointmentDate,
       status: 'pending'
     });
 
