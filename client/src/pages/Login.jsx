@@ -3,6 +3,8 @@ import api from "../api/axios";
 import { useAuth } from "../context/AuthContext";
 import { useNavigate } from "react-router-dom";
 import React from "react";
+import { FiMail, FiLock } from "react-icons/fi";
+
 const Login = () => {
   const { login } = useAuth();
   const navigate = useNavigate();
@@ -25,40 +27,98 @@ const Login = () => {
   };
 
   return (
-    <div className="flex justify-center items-center min-h-screen bg-gray-100">
-      <div className="bg-white p-8 rounded-xl shadow-lg w-96">
-        <h2 className="text-2xl font-semibold text-center mb-4">Login</h2>
+    <div className="min-h-screen flex justify-center items-center p-4 
+      bg-gradient-to-br from-blue-600 via-cyan-500 to-green-500">
 
-        {error && <p className="text-red-500 text-center mb-2">{error}</p>}
+      {/* Animated Glow Background */}
+      <div className="absolute w-[500px] h-[500px] bg-white/20 rounded-full blur-3xl animate-pulse"></div>
 
-        <form onSubmit={handleSubmit}>
-          <input
-            type="email"
-            name="email"
-            placeholder="Email"
-            className="w-full border p-2 rounded mb-3"
-            onChange={handleChange}
-          />
+      <div className="relative bg-white/20 backdrop-blur-xl p-10 rounded-3xl shadow-2xl 
+        w-full max-w-md border border-white/30 
+        animate-[pulse_6s_ease-in-out_infinite]">
 
-          <input
-            type="password"
-            name="password"
-            placeholder="Password"
-            className="w-full border p-2 rounded mb-4"
-            onChange={handleChange}
-          />
+        {/* Title */}
+        <div className="text-center mb-6">
+          <h2 className="text-4xl font-extrabold tracking-wide 
+            bg-gradient-to-r from-white to-blue-200 bg-clip-text text-transparent">
+            Vaccine Portal
+          </h2>
+          <p className="text-white/90 mt-2 text-sm">Sign in to continue</p>
+        </div>
 
-          <button className="w-full bg-blue-600 hover:bg-blue-700 text-white py-2 rounded transition">
-            Login
+        {/* Error */}
+        {error && (
+          <div className="bg-red-100/80 border-l-4 border-red-700 text-red-700 p-3 rounded-lg mb-4">
+            <p className="text-sm font-medium">{error}</p>
+          </div>
+        )}
+
+        {/* Form */}
+        <form onSubmit={handleSubmit} className="space-y-5">
+          
+          {/* Email */}
+          <div>
+            <label className="block text-sm font-medium text-white mb-1">
+              Email
+            </label>
+            <div className="flex items-center bg-white/80 p-3 rounded-xl 
+              border border-gray-300 focus-within:border-blue-600 
+              transition-all">
+              <FiMail className="text-gray-600 mr-3 text-lg" />
+              <input
+                type="email"
+                name="email"
+                placeholder="Enter your email"
+                className="w-full bg-transparent outline-none text-gray-800"
+                onChange={handleChange}
+                required
+              />
+            </div>
+          </div>
+
+          {/* Password */}
+          <div>
+            <label className="block text-sm font-medium text-white mb-1">
+              Password
+            </label>
+            <div className="flex items-center bg-white/80 p-3 rounded-xl 
+              border border-gray-300 focus-within:border-blue-600 
+              transition-all">
+              <FiLock className="text-gray-600 mr-3 text-lg" />
+              <input
+                type="password"
+                name="password"
+                placeholder="Enter your password"
+                className="w-full bg-transparent outline-none text-gray-800"
+                onChange={handleChange}
+                required
+              />
+            </div>
+          </div>
+
+          {/* Button */}
+          <button
+            type="submit"
+            className="w-full py-3 rounded-xl 
+            bg-gradient-to-r from-blue-700 to-cyan-500 
+            hover:from-blue-800 hover:to-cyan-600
+            text-white font-semibold shadow-lg 
+            transform transition duration-300 hover:scale-[1.03]"
+          >
+            Sign In
           </button>
         </form>
 
-        <p className="mt-4 text-sm text-center">
-          Don't have an account?
-          <a className="text-blue-500 ml-1 underline" href="/register">
-            Register
-          </a>
-        </p>
+        {/* Footer */}
+        <div className="mt-6 text-center">
+          <p className="text-white/90 text-sm">
+            Don’t have an account?
+            <a className="text-yellow-300 hover:text-yellow-400 ml-1 font-medium hover:underline" 
+              href="/register">
+              Create Account
+            </a>
+          </p>
+        </div>
       </div>
     </div>
   );
