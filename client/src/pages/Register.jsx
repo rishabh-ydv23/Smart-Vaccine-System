@@ -30,19 +30,19 @@ const Register = () => {
     bg-gradient-to-br from-teal-600 via-blue-600 to-cyan-500">
 
       {/* Glow Background */}
-      <div className="absolute w-[450px] h-[450px] bg-white/20 rounded-full blur-3xl animate-pulse"></div>
+      <div className="absolute w-[300px] h-[300px] md:w-[450px] md:h-[450px] bg-white/20 rounded-full blur-3xl animate-pulse"></div>
 
-      <div className="relative bg-white/20 backdrop-blur-xl p-10 rounded-3xl 
+      <div className="relative bg-white/20 backdrop-blur-xl p-6 md:p-10 rounded-3xl 
       shadow-2xl w-full max-w-md border border-white/30
       animate-[pulse_7s_ease-in-out_infinite]">
 
         {/* Heading */}
-        <div className="text-center mb-6">
-          <h2 className="text-4xl font-extrabold 
+        <div className="text-center mb-4 md:mb-6">
+          <h2 className="text-3xl md:text-4xl font-extrabold 
           bg-gradient-to-r from-white to-teal-200 bg-clip-text text-transparent">
             Create Account
           </h2>
-          <p className="text-white/90 mt-2 text-sm">
+          <p className="text-white/90 mt-2 text-xs md:text-sm">
             Join the Vaccine Management Portal
           </p>
         </div>
@@ -59,23 +59,23 @@ const Register = () => {
         )}
 
         {/* Form */}
-        <form onSubmit={handleSubmit} className="space-y-5">
+        <form onSubmit={handleSubmit} className="space-y-4 md:space-y-5">
           
           {/* Name */}
           <div>
-            <label className="block text-sm font-medium text-white mb-1">
+            <label className="block text-xs md:text-sm font-medium text-white mb-1">
               Full Name
             </label>
             <div
-              className="flex items-center bg-white/80 p-3 rounded-xl 
+              className="flex items-center bg-white/80 p-2.5 md:p-3 rounded-xl 
               border border-gray-300 focus-within:border-teal-600 transition-all"
             >
-              <FiUser className="text-gray-600 mr-3 text-lg" />
+              <FiUser className="text-gray-600 mr-2 md:mr-3 text-base md:text-lg" />
               <input
                 name="name"
                 type="text"
                 placeholder="Enter your full name"
-                className="w-full bg-transparent outline-none text-gray-800"
+                className="w-full bg-transparent outline-none text-gray-800 text-sm md:text-base"
                 onChange={handleChange}
                 required
               />
@@ -84,19 +84,19 @@ const Register = () => {
 
           {/* Email */}
           <div>
-            <label className="block text-sm font-medium text-white mb-1">
+            <label className="block text-xs md:text-sm font-medium text-white mb-1">
               Email
             </label>
             <div
-              className="flex items-center bg-white/80 p-3 rounded-xl 
+              className="flex items-center bg-white/80 p-2.5 md:p-3 rounded-xl 
               border border-gray-300 focus-within:border-teal-600 transition-all"
             >
-              <FiMail className="text-gray-600 mr-3 text-lg" />
+              <FiMail className="text-gray-600 mr-2 md:mr-3 text-base md:text-lg" />
               <input
                 name="email"
                 type="email"
                 placeholder="Enter your email"
-                className="w-full bg-transparent outline-none text-gray-800"
+                className="w-full bg-transparent outline-none text-gray-800 text-sm md:text-base"
                 onChange={handleChange}
                 required
               />
@@ -105,19 +105,19 @@ const Register = () => {
 
           {/* Password */}
           <div>
-            <label className="block text-sm font-medium text-white mb-1">
+            <label className="block text-xs md:text-sm font-medium text-white mb-1">
               Password
             </label>
             <div
-              className="flex items-center bg-white/80 p-3 rounded-xl 
+              className="flex items-center bg-white/80 p-2.5 md:p-3 rounded-xl 
               border border-gray-300 focus-within:border-teal-600 transition-all"
             >
-              <FiLock className="text-gray-600 mr-3 text-lg" />
+              <FiLock className="text-gray-600 mr-2 md:mr-3 text-base md:text-lg" />
               <input
                 name="password"
                 type="password"
                 placeholder="Create a password"
-                className="w-full bg-transparent outline-none text-gray-800"
+                className="w-full bg-transparent outline-none text-gray-800 text-sm md:text-base"
                 onChange={handleChange}
                 required
               />
@@ -127,10 +127,10 @@ const Register = () => {
           {/* Submit Button */}
           <button
             type="submit"
-            className="w-full py-3 rounded-xl
+            className="w-full py-2.5 md:py-3 rounded-xl
             bg-gradient-to-r from-teal-600 to-blue-600
             hover:from-teal-700 hover:to-blue-700
-            text-white font-semibold shadow-lg 
+            text-white font-semibold shadow-lg text-sm md:text-base
             transform transition duration-300 hover:scale-[1.03]"
           >
             Create Account
@@ -138,8 +138,8 @@ const Register = () => {
         </form>
 
         {/* Footer */}
-        <div className="mt-6 text-center">
-          <p className="text-white/90 text-sm">
+        <div className="mt-4 md:mt-6 text-center">
+          <p className="text-white/90 text-xs md:text-sm">
             Already have an account?
             <a
               href="/login"
