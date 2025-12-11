@@ -5,6 +5,7 @@ import {
   XAxis, YAxis, CartesianGrid, Tooltip, 
   Legend, ResponsiveContainer 
 } from "recharts";
+import { FiBarChart2, FiRefreshCw } from "react-icons/fi";
 
 const Analytics = () => {
   const [analytics, setAnalytics] = useState({
@@ -59,6 +60,25 @@ const Analytics = () => {
 
   return (
     <div className="space-y-6">
+      {/* Page Header */}
+      <div className="bg-white/90 backdrop-blur-lg rounded-2xl shadow-xl p-4 lg:p-6 border border-white/30">
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+          <div>
+            <h2 className="text-2xl lg:text-3xl font-bold text-gray-800 flex items-center gap-3">
+              <FiBarChart2 className="text-purple-600" />
+              Analytics Dashboard
+            </h2>
+            <p className="text-gray-600 mt-1">Comprehensive overview of your vaccine management system</p>
+          </div>
+          <button 
+            onClick={() => window.location.reload()}
+            className="bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white px-4 py-2 rounded-lg font-medium shadow-md hover:shadow-lg transition-all flex items-center gap-2"
+          >
+            <FiRefreshCw className="text-sm" />
+            Refresh Data
+          </button>
+        </div>
+      </div>
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         <div className="bg-gradient-to-r from-blue-500 to-blue-600 rounded-xl p-5 text-white shadow-lg">

@@ -170,12 +170,14 @@ const AdminDashboard = () => {
           <div>
             <h2 className="text-2xl lg:text-3xl font-bold text-white">
               {tab === 'home' && '🏠 Admin Dashboard'}
+              {tab === 'analytics' && '📊 Analytics Dashboard'}
               {tab === 'vaccines' && '💉 Manage Vaccines'}
               {tab === 'medicines' && '💊 Manage Medicines'}
               {tab === 'appointments' && '📅 Manage Appointments'}
             </h2>
             <p className="text-white/70 text-xs lg:text-sm mt-1">
               {tab === 'home' && 'Welcome to the admin control panel'}
+              {tab === 'analytics' && 'Comprehensive overview of your vaccine management system'}
               {tab === 'vaccines' && 'Add, update, and manage vaccine inventory'}
               {tab === 'medicines' && 'Add, update, and manage medicine stock'}
               {tab === 'appointments' && 'Approve or reject user appointments'}
