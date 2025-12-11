@@ -5,11 +5,13 @@ import MedicineManager from "../components/admin/MedicineManager";
 import AppointmentManager from "../components/admin/AppointmentManager";
 import { useState } from "react";
 import React from "react";
+import { FiLogOut, FiUser, FiActivity, FiPackage, FiCalendar, FiHome, FiMenu, FiX, FiShield } from "react-icons/fi";
 
 const AdminDashboard = () => {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
-  const [tab, setTab] = useState("vaccines");
+  const [tab, setTab] = useState("home");
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
   // restrict non-admin access
   if (user?.role !== "admin") {
@@ -35,65 +37,249 @@ const AdminDashboard = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <header className="bg-gradient-to-r from-indigo-600 to-purple-600 shadow-lg">
-        <div className="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
-          <div>
-            <h2 className="text-2xl font-bold text-white">Admin Dashboard</h2>
-            <p className="text-indigo-100 text-sm">Manage your vaccine system</p>
+    <div className="min-h-screen bg-gradient-to-br from-indigo-600 via-purple-600 to-pink-600 flex flex-col lg:flex-row">
+
+      {/* Mobile Header */}
+      <div className="lg:hidden bg-white/20 backdrop-blur-lg border-b border-white/30 p-4 flex justify-between items-center">
+        <div className="flex items-center gap-3">
+          <div className="bg-white/30 p-2 rounded-full">
+            <FiShield className="text-white text-lg" />
           </div>
+          <div>
+            <h3 className="text-white font-bold">Admin Panel</h3>
+            <p className="text-white/70 text-xs">{user?.name}</p>
+          </div>
+        </div>
+        <button
+          onClick={() => setSidebarOpen(!sidebarOpen)}
+          className="text-white p-2 hover:bg-white/10 rounded-lg transition-all"
+        >
+          {sidebarOpen ? <FiX size={24} /> : <FiMenu size={24} />}
+        </button>
+      </div>
+
+      {/* Sidebar */}
+      <aside className={`${
+        sidebarOpen ? 'translate-x-0' : '-translate-x-full'
+      } lg:translate-x-0 fixed lg:static inset-y-0 left-0 z-50 w-64 bg-white/20 backdrop-blur-lg border-r border-white/30 p-6 space-y-2 transition-transform duration-300 ease-in-out lg:mt-0 mt-[73px]`}>
+        
+        <div className="mb-8 hidden lg:block">
+          <div className="bg-white/30 p-3 rounded-full w-16 h-16 flex items-center justify-center mx-auto">
+            <FiShield className="text-white text-2xl" />
+          </div>
+          <h3 className="text-white text-center mt-3 font-bold text-lg">Admin Panel</h3>
+          <p className="text-white/70 text-center text-sm">{user?.name}</p>
+        </div>
+
+        {/* Navigation */}
+        <nav className="space-y-2">
+          <button
+            onClick={() => {
+              setTab('home');
+              setSidebarOpen(false);
+            }}
+            className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg font-medium transition-all ${
+              tab === 'home'
+                ? 'bg-white text-purple-600 shadow-md'
+                : 'text-white hover:bg-white/10'
+            }`}
+          >
+            <FiHome /> Dashboard Home
+          </button>
+
+          <button
+            onClick={() => {
+              setTab('vaccines');
+              setSidebarOpen(false);
+            }}
+            className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg font-medium transition-all ${
+              tab === 'vaccines'
+                ? 'bg-white text-purple-600 shadow-md'
+                : 'text-white hover:bg-white/10'
+            }`}
+          >
+            <FiActivity /> Manage Vaccines
+          </button>
+
+          <button
+            onClick={() => {
+              setTab('medicines');
+              setSidebarOpen(false);
+            }}
+            className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg font-medium transition-all ${
+              tab === 'medicines'
+                ? 'bg-white text-purple-600 shadow-md'
+                : 'text-white hover:bg-white/10'
+            }`}
+          >
+            <FiPackage /> Manage Medicines
+          </button>
+
+          <button
+            onClick={() => {
+              setTab('appointments');
+              setSidebarOpen(false);
+            }}
+            className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg font-medium transition-all ${
+              tab === 'appointments'
+                ? 'bg-white text-purple-600 shadow-md'
+                : 'text-white hover:bg-white/10'
+            }`}
+          >
+            <FiCalendar /> Manage Appointments
+          </button>
+
+          <button
+            onClick={() => {
+              navigate('/');
+              setSidebarOpen(false);
+            }}
+            className="w-full flex items-center gap-3 px-4 py-3 rounded-lg font-medium text-white hover:bg-white/10 transition-all"
+          >
+            <FiUser /> User Dashboard
+          </button>
+        </nav>
+
+        <div className="pt-6 mt-6 border-t border-white/30">
           <button
             onClick={logout}
-            className="bg-white/20 hover:bg-white/30 text-white px-5 py-2 rounded-lg font-medium shadow-md hover:shadow-lg transition-all"
+            className="w-full flex items-center gap-3 px-4 py-3 rounded-lg font-medium bg-red-600 hover:bg-red-700 text-white transition-all shadow-md"
           >
-            Logout
+            <FiLogOut /> Logout
           </button>
         </div>
-      </header>
+      </aside>
 
-      <div className="max-w-7xl mx-auto px-6 py-6">
-        {/* Navigation Tabs */}
-        <div className="bg-white rounded-lg shadow-md p-1.5 mb-6 flex gap-1.5">
-          <button 
-            onClick={() => setTab("vaccines")}
-            className={`flex-1 py-2.5 px-4 rounded-md font-medium transition-all text-sm ${
-              tab === "vaccines" 
-                ? "bg-green-600 text-white shadow-md" 
-                : "bg-gray-50 text-gray-600 hover:bg-gray-100"
-            }`}
-          >
-            Vaccines
-          </button>
-          <button 
-            onClick={() => setTab("medicines")}
-            className={`flex-1 py-2.5 px-4 rounded-md font-medium transition-all text-sm ${
-              tab === "medicines" 
-                ? "bg-blue-600 text-white shadow-md" 
-                : "bg-gray-50 text-gray-600 hover:bg-gray-100"
-            }`}
-          >
-            Medicines
-          </button>
-          <button 
-            onClick={() => setTab("appointments")}
-            className={`flex-1 py-2.5 px-4 rounded-md font-medium transition-all text-sm ${
-              tab === "appointments" 
-                ? "bg-purple-600 text-white shadow-md" 
-                : "bg-gray-50 text-gray-600 hover:bg-gray-100"
-            }`}
-          >
-            Appointments
-          </button>
-        </div>
+      {/* Overlay for mobile */}
+      {sidebarOpen && (
+        <div
+          className="lg:hidden fixed inset-0 bg-black/50 z-40 mt-[73px]"
+          onClick={() => setSidebarOpen(false)}
+        ></div>
+      )}
 
-        {/* Content Area */}
-        <div className="bg-white rounded-lg shadow-md p-5">
-          {tab === "vaccines" && <VaccineManager />}
-          {tab === "medicines" && <MedicineManager />}
-          {tab === "appointments" && <AppointmentManager />}
+      {/* Main Content */}
+      <main className="flex-1 p-4 lg:p-6 overflow-y-auto">
+        {/* Header */}
+        <header className="bg-white/20 backdrop-blur-lg shadow-lg rounded-2xl p-4 lg:p-5 mb-4 lg:mb-6 border border-white/30">
+          <div>
+            <h2 className="text-2xl lg:text-3xl font-bold text-white">
+              {tab === 'home' && '🏠 Admin Dashboard'}
+              {tab === 'vaccines' && '💉 Manage Vaccines'}
+              {tab === 'medicines' && '💊 Manage Medicines'}
+              {tab === 'appointments' && '📅 Manage Appointments'}
+            </h2>
+            <p className="text-white/70 text-xs lg:text-sm mt-1">
+              {tab === 'home' && 'Welcome to the admin control panel'}
+              {tab === 'vaccines' && 'Add, update, and manage vaccine inventory'}
+              {tab === 'medicines' && 'Add, update, and manage medicine stock'}
+              {tab === 'appointments' && 'Approve or reject user appointments'}
+            </p>
+          </div>
+        </header>
+
+        <div className="max-w-6xl space-y-4 lg:space-y-6">
+
+        {/* Home Tab */}
+        {tab === 'home' && (
+          <>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-3 lg:gap-4 mb-4 lg:mb-6">
+              <div className="bg-white/90 backdrop-blur-lg rounded-xl p-4 lg:p-6 border border-white/30 shadow-lg hover:shadow-xl transition-all cursor-pointer" onClick={() => setTab('vaccines')}>
+                <div className="flex items-center gap-3 lg:gap-4">
+                  <div className="bg-green-100 p-3 lg:p-4 rounded-full">
+                    <FiActivity className="text-green-600 text-xl lg:text-2xl" />
+                  </div>
+                  <div>
+                    <h4 className="font-bold text-gray-800 text-base lg:text-lg">Vaccines</h4>
+                    <p className="text-gray-600 text-xs lg:text-sm">Manage inventory</p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="bg-white/90 backdrop-blur-lg rounded-xl p-4 lg:p-6 border border-white/30 shadow-lg hover:shadow-xl transition-all cursor-pointer" onClick={() => setTab('medicines')}>
+                <div className="flex items-center gap-3 lg:gap-4">
+                  <div className="bg-blue-100 p-3 lg:p-4 rounded-full">
+                    <FiPackage className="text-blue-600 text-xl lg:text-2xl" />
+                  </div>
+                  <div>
+                    <h4 className="font-bold text-gray-800 text-base lg:text-lg">Medicines</h4>
+                    <p className="text-gray-600 text-xs lg:text-sm">Manage stock</p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="bg-white/90 backdrop-blur-lg rounded-xl p-4 lg:p-6 border border-white/30 shadow-lg hover:shadow-xl transition-all cursor-pointer" onClick={() => setTab('appointments')}>
+                <div className="flex items-center gap-3 lg:gap-4">
+                  <div className="bg-purple-100 p-3 lg:p-4 rounded-full">
+                    <FiCalendar className="text-purple-600 text-xl lg:text-2xl" />
+                  </div>
+                  <div>
+                    <h4 className="font-bold text-gray-800 text-base lg:text-lg">Appointments</h4>
+                    <p className="text-gray-600 text-xs lg:text-sm">Review requests</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <section className="bg-white/90 backdrop-blur-lg rounded-2xl shadow-xl p-4 lg:p-6 border border-white/30">
+              <h3 className="text-lg lg:text-xl font-bold text-gray-800 mb-3 lg:mb-4">Quick Actions</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3 lg:gap-4">
+                <button
+                  onClick={() => setTab('vaccines')}
+                  className="p-4 bg-gradient-to-r from-green-500 to-teal-500 hover:from-green-600 hover:to-teal-600 text-white rounded-lg font-semibold shadow-md transition-all text-left"
+                >
+                  <p className="text-sm opacity-90">Add New</p>
+                  <p className="text-lg">Vaccine</p>
+                </button>
+                <button
+                  onClick={() => setTab('medicines')}
+                  className="p-4 bg-gradient-to-r from-blue-500 to-indigo-500 hover:from-blue-600 hover:to-indigo-600 text-white rounded-lg font-semibold shadow-md transition-all text-left"
+                >
+                  <p className="text-sm opacity-90">Add New</p>
+                  <p className="text-lg">Medicine</p>
+                </button>
+                <button
+                  onClick={() => setTab('appointments')}
+                  className="p-4 bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white rounded-lg font-semibold shadow-md transition-all text-left"
+                >
+                  <p className="text-sm opacity-90">Review</p>
+                  <p className="text-lg">Appointments</p>
+                </button>
+                <button
+                  onClick={() => navigate('/')}
+                  className="p-4 bg-gradient-to-r from-gray-600 to-gray-700 hover:from-gray-700 hover:to-gray-800 text-white rounded-lg font-semibold shadow-md transition-all text-left"
+                >
+                  <p className="text-sm opacity-90">Switch to</p>
+                  <p className="text-lg">User View</p>
+                </button>
+              </div>
+            </section>
+          </>
+        )}
+
+        {/* Vaccines Tab */}
+        {tab === 'vaccines' && (
+          <section className="bg-white/90 backdrop-blur-lg rounded-2xl shadow-xl p-4 lg:p-6 border border-white/30">
+            <VaccineManager />
+          </section>
+        )}
+
+        {/* Medicines Tab */}
+        {tab === 'medicines' && (
+          <section className="bg-white/90 backdrop-blur-lg rounded-2xl shadow-xl p-4 lg:p-6 border border-white/30">
+            <MedicineManager />
+          </section>
+        )}
+
+        {/* Appointments Tab */}
+        {tab === 'appointments' && (
+          <section className="bg-white/90 backdrop-blur-lg rounded-2xl shadow-xl p-4 lg:p-6 border border-white/30">
+            <AppointmentManager />
+          </section>
+        )}
+
         </div>
-      </div>
+      </main>
     </div>
   );
 };
