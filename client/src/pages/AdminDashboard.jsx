@@ -14,47 +14,86 @@ const AdminDashboard = () => {
   // restrict non-admin access
   if (user?.role !== "admin") {
     return (
-      <div style={{ textAlign: "center", padding: "20px" }}>
-        <h2>🚫 Access Denied</h2>
-        <p>You are not authorized to view this page.</p>
-        <button onClick={() => navigate("/")}>Go Back</button>
+      <div className="min-h-screen bg-gradient-to-br from-red-100 to-pink-100 flex items-center justify-center p-4">
+        <div className="bg-white rounded-2xl shadow-2xl p-8 max-w-md text-center">
+          <div className="bg-red-100 w-20 h-20 rounded-full mx-auto mb-6 flex items-center justify-center">
+            <svg className="w-10 h-10 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+            </svg>
+          </div>
+          <h2 className="text-3xl font-bold text-gray-800 mb-3">🚫 Access Denied</h2>
+          <p className="text-gray-600 mb-6">You are not authorized to view this page.</p>
+          <button 
+            onClick={() => navigate("/")}
+            className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white px-8 py-3 rounded-lg font-semibold shadow-lg hover:shadow-xl transition-all transform hover:-translate-y-0.5"
+          >
+            Go Back to Dashboard
+          </button>
+        </div>
       </div>
     );
   }
 
   return (
-    <div style={{ padding: "20px" }}>
-      <header style={{ display: "flex", justifyContent: "space-between" }}>
-        <h2>Admin Dashboard ⚙️</h2>
-        <button
-          onClick={logout}
-          style={{
-            background: "red",
-            color: "white",
-            border: "none",
-            padding: "8px 12px",
-            cursor: "pointer",
-          }}
-        >
-          Logout
-        </button>
+    <div className="min-h-screen bg-gray-50">
+      {/* Header */}
+      <header className="bg-gradient-to-r from-indigo-600 to-purple-600 shadow-lg">
+        <div className="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
+          <div>
+            <h2 className="text-2xl font-bold text-white">Admin Dashboard</h2>
+            <p className="text-indigo-100 text-sm">Manage your vaccine system</p>
+          </div>
+          <button
+            onClick={logout}
+            className="bg-white/20 hover:bg-white/30 text-white px-5 py-2 rounded-lg font-medium shadow-md hover:shadow-lg transition-all"
+          >
+            Logout
+          </button>
+        </div>
       </header>
 
-      <br />
+      <div className="max-w-7xl mx-auto px-6 py-6">
+        {/* Navigation Tabs */}
+        <div className="bg-white rounded-lg shadow-md p-1.5 mb-6 flex gap-1.5">
+          <button 
+            onClick={() => setTab("vaccines")}
+            className={`flex-1 py-2.5 px-4 rounded-md font-medium transition-all text-sm ${
+              tab === "vaccines" 
+                ? "bg-green-600 text-white shadow-md" 
+                : "bg-gray-50 text-gray-600 hover:bg-gray-100"
+            }`}
+          >
+            Vaccines
+          </button>
+          <button 
+            onClick={() => setTab("medicines")}
+            className={`flex-1 py-2.5 px-4 rounded-md font-medium transition-all text-sm ${
+              tab === "medicines" 
+                ? "bg-blue-600 text-white shadow-md" 
+                : "bg-gray-50 text-gray-600 hover:bg-gray-100"
+            }`}
+          >
+            Medicines
+          </button>
+          <button 
+            onClick={() => setTab("appointments")}
+            className={`flex-1 py-2.5 px-4 rounded-md font-medium transition-all text-sm ${
+              tab === "appointments" 
+                ? "bg-purple-600 text-white shadow-md" 
+                : "bg-gray-50 text-gray-600 hover:bg-gray-100"
+            }`}
+          >
+            Appointments
+          </button>
+        </div>
 
-      {/* Navigation Tabs */}
-      <div style={{ display: "flex", gap: "10px" }}>
-        <button onClick={() => setTab("vaccines")}>Vaccines</button>
-        <button onClick={() => setTab("medicines")}>Medicines</button>
-        <button onClick={() => setTab("appointments")}>Appointments</button>
+        {/* Content Area */}
+        <div className="bg-white rounded-lg shadow-md p-5">
+          {tab === "vaccines" && <VaccineManager />}
+          {tab === "medicines" && <MedicineManager />}
+          {tab === "appointments" && <AppointmentManager />}
+        </div>
       </div>
-
-      <hr />
-
-      {/* Conditional Section */}
-      {tab === "vaccines" && <VaccineManager />}
-      {tab === "medicines" && <MedicineManager />}
-      {tab === "appointments" && <AppointmentManager />}
     </div>
   );
 };
