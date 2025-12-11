@@ -12,11 +12,13 @@ const generateToken = (id, role) => {
 router.post('/register', async (req, res) => {
   try {
     const { name, email, password, role } = req.body;
+    console.log('Registration attempt for email:', email);
 
     const exists = await User.findOne({ email });
     if (exists) return res.status(400).json({ message: 'User already exists' });
 
     const user = await User.create({ name, email, password, role: role || 'user' });
+    console.log('User created successfully:', email);
 
     res.status(201).json({
       _id: user._id,
@@ -26,7 +28,7 @@ router.post('/register', async (req, res) => {
       token: generateToken(user._id, user.role)
     });
   } catch (err) {
-    console.error(err);
+    console.error('Registration error:', err);
     res.status(500).json({ message: 'Server error' });
   }
 });
@@ -35,9 +37,19 @@ router.post('/register', async (req, res) => {
 router.post('/login', async (req, res) => {
   try {
     const { email, password } = req.body;
+    console.log('Login attempt for email:', email);
 
     const user = await User.findOne({ email });
-    if (!user || !(await user.matchPassword(password))) {
+    if (!user) {
+      console.log('User not found:', email);
+      return res.status(401).json({ message: 'Invalid email or password' });
+    }
+
+    const isMatch = await user.matchPassword(password);
+    console.log('Password match result:', isMatch);
+    
+    if (!isMatch) {
+      console.log('Password does not match for user:', email);
       return res.status(401).json({ message: 'Invalid email or password' });
     }
 
@@ -49,7 +61,7 @@ router.post('/login', async (req, res) => {
       token: generateToken(user._id, user.role)
     });
   } catch (err) {
-    console.error(err);
+    console.error('Login error:', err);
     res.status(500).json({ message: 'Server error' });
   }
 });
