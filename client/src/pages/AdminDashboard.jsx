@@ -3,9 +3,10 @@ import { useNavigate } from "react-router-dom";
 import VaccineManager from "../components/admin/VaccineManager";
 import MedicineManager from "../components/admin/MedicineManager";
 import AppointmentManager from "../components/admin/AppointmentManager";
+import Analytics from "../components/admin/Analytics";
 import { useState } from "react";
 import React from "react";
-import { FiLogOut, FiUser, FiActivity, FiPackage, FiCalendar, FiHome, FiMenu, FiX, FiShield } from "react-icons/fi";
+import { FiLogOut, FiUser, FiActivity, FiPackage, FiCalendar, FiHome, FiMenu, FiX, FiShield, FiBarChart2 } from "react-icons/fi";
 
 const AdminDashboard = () => {
   const { user, logout } = useAuth();
@@ -85,6 +86,20 @@ const AdminDashboard = () => {
             }`}
           >
             <FiHome /> Dashboard Home
+          </button>
+
+          <button
+            onClick={() => {
+              setTab('analytics');
+              setSidebarOpen(false);
+            }}
+            className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg font-medium transition-all ${
+              tab === 'analytics'
+                ? 'bg-white text-purple-600 shadow-md'
+                : 'text-white hover:bg-white/10'
+            }`}
+          >
+            <FiBarChart2 /> Analytics
           </button>
 
           <button
@@ -174,6 +189,18 @@ const AdminDashboard = () => {
         {tab === 'home' && (
           <>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-3 lg:gap-4 mb-4 lg:mb-6">
+              <div className="bg-white/90 backdrop-blur-lg rounded-xl p-4 lg:p-6 border border-white/30 shadow-lg hover:shadow-xl transition-all cursor-pointer" onClick={() => setTab('analytics')}>
+                <div className="flex items-center gap-3 lg:gap-4">
+                  <div className="bg-purple-100 p-3 lg:p-4 rounded-full">
+                    <FiBarChart2 className="text-purple-600 text-xl lg:text-2xl" />
+                  </div>
+                  <div>
+                    <h4 className="font-bold text-gray-800 text-base lg:text-lg">Analytics</h4>
+                    <p className="text-gray-600 text-xs lg:text-sm">View reports</p>
+                  </div>
+                </div>
+              </div>
+
               <div className="bg-white/90 backdrop-blur-lg rounded-xl p-4 lg:p-6 border border-white/30 shadow-lg hover:shadow-xl transition-all cursor-pointer" onClick={() => setTab('vaccines')}>
                 <div className="flex items-center gap-3 lg:gap-4">
                   <div className="bg-green-100 p-3 lg:p-4 rounded-full">
@@ -197,23 +224,18 @@ const AdminDashboard = () => {
                   </div>
                 </div>
               </div>
-
-              <div className="bg-white/90 backdrop-blur-lg rounded-xl p-4 lg:p-6 border border-white/30 shadow-lg hover:shadow-xl transition-all cursor-pointer" onClick={() => setTab('appointments')}>
-                <div className="flex items-center gap-3 lg:gap-4">
-                  <div className="bg-purple-100 p-3 lg:p-4 rounded-full">
-                    <FiCalendar className="text-purple-600 text-xl lg:text-2xl" />
-                  </div>
-                  <div>
-                    <h4 className="font-bold text-gray-800 text-base lg:text-lg">Appointments</h4>
-                    <p className="text-gray-600 text-xs lg:text-sm">Review requests</p>
-                  </div>
-                </div>
-              </div>
             </div>
 
             <section className="bg-white/90 backdrop-blur-lg rounded-2xl shadow-xl p-4 lg:p-6 border border-white/30">
               <h3 className="text-lg lg:text-xl font-bold text-gray-800 mb-3 lg:mb-4">Quick Actions</h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3 lg:gap-4">
+                <button
+                  onClick={() => setTab('analytics')}
+                  className="p-4 bg-gradient-to-r from-purple-500 to-indigo-500 hover:from-purple-600 hover:to-indigo-600 text-white rounded-lg font-semibold shadow-md transition-all text-left"
+                >
+                  <p className="text-sm opacity-90">View</p>
+                  <p className="text-lg">Analytics Report</p>
+                </button>
                 <button
                   onClick={() => setTab('vaccines')}
                   className="p-4 bg-gradient-to-r from-green-500 to-teal-500 hover:from-green-600 hover:to-teal-600 text-white rounded-lg font-semibold shadow-md transition-all text-left"
@@ -230,21 +252,21 @@ const AdminDashboard = () => {
                 </button>
                 <button
                   onClick={() => setTab('appointments')}
-                  className="p-4 bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white rounded-lg font-semibold shadow-md transition-all text-left"
+                  className="p-4 bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white rounded-lg font-semibold shadow-md transition-all text-left"
                 >
                   <p className="text-sm opacity-90">Review</p>
                   <p className="text-lg">Appointments</p>
                 </button>
-                <button
-                  onClick={() => navigate('/')}
-                  className="p-4 bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white rounded-lg font-semibold shadow-md transition-all text-left"
-                >
-                  <p className="text-sm opacity-90">View System As</p>
-                  <p className="text-lg">Regular User</p>
-                </button>
               </div>
             </section>
           </>
+        )}
+
+        {/* Analytics Tab */}
+        {tab === 'analytics' && (
+          <section className="bg-white/90 backdrop-blur-lg rounded-2xl shadow-xl p-4 lg:p-6 border border-white/30">
+            <Analytics />
+          </section>
         )}
 
         {/* Vaccines Tab */}

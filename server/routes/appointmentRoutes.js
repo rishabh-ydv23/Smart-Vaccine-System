@@ -1,6 +1,7 @@
 const express = require('express');
 const Appointment = require('../models/Appointment');
 const Vaccine = require('../models/Vaccine');
+const User = require('../models/User');
 const { protect, adminOnly } = require('../middleware/authMiddleware');
 
 const router = express.Router();
@@ -91,6 +92,57 @@ router.patch('/:id/status', protect, adminOnly, async (req, res) => {
 
     res.json(appointment);
   } catch (err) {
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
+// GET /api/appointments/analytics - admin analytics
+router.get('/analytics', protect, adminOnly, async (req, res) => {
+  try {
+    // Get total users
+    const totalUsers = await User.countDocuments({ role: 'user' });
+    
+    // Get upcoming appointments (next 7 days)
+    const startDate = new Date();
+    const endDate = new Date();
+    endDate.setDate(endDate.getDate() + 7);
+    
+    const upcomingAppointments = await Appointment.find({
+      date: { $gte: startDate, $lte: endDate },
+      status: { $in: ['pending', 'approved'] }
+    }).populate('userId', 'name email').populate('vaccineId', 'name');
+    
+    // Get vaccination statistics
+    const vaccinationStats = await Appointment.aggregate([
+      { $match: { status: 'completed' } },
+      { 
+        $group: { 
+          _id: '$vaccineId', 
+          count: { $sum: 1 } 
+        } 
+      },
+      { $lookup: { from: 'vaccines', localField: '_id', foreignField: '_id', as: 'vaccine' } },
+      { $unwind: '$vaccine' },
+      { $project: { name: '$vaccine.name', count: 1 } }
+    ]);
+    
+    // Get stock levels
+    const vaccines = await Vaccine.find({}, 'name availableQuantity');
+    
+    // Get appointments by status
+    const statusCounts = await Appointment.aggregate([
+      { $group: { _id: '$status', count: { $sum: 1 } } }
+    ]);
+    
+    res.json({
+      totalUsers,
+      upcomingAppointments,
+      vaccinationStats,
+      vaccines,
+      statusCounts
+    });
+  } catch (err) {
+    console.error(err);
     res.status(500).json({ message: 'Server error' });
   }
 });
