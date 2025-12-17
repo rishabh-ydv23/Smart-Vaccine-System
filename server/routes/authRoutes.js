@@ -4,12 +4,23 @@ const User = require('../models/User');
 
 const router = express.Router();
 
+// Reference to db connection status
+let dbConnected = false;
+const setDbStatus = (status) => {
+  dbConnected = status;
+};
+router.setDbStatus = setDbStatus;
+
 const generateToken = (id, role) => {
   return jwt.sign({ id, role }, process.env.JWT_SECRET, { expiresIn: '7d' });
 };
 
 // POST /api/auth/register
 router.post('/register', async (req, res) => {
+  if (!dbConnected) {
+    return res.status(503).json({ message: 'Database connection unavailable. Please contact administrator.' });
+  }
+  
   try {
     const { name, email, password, role } = req.body;
     console.log('Registration attempt for email:', email);
@@ -35,6 +46,10 @@ router.post('/register', async (req, res) => {
 
 // POST /api/auth/login
 router.post('/login', async (req, res) => {
+  if (!dbConnected) {
+    return res.status(503).json({ message: 'Database connection unavailable. Please contact administrator.' });
+  }
+  
   try {
     const { email, password } = req.body;
     console.log('Login attempt for email:', email);

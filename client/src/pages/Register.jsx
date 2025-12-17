@@ -20,7 +20,12 @@ const Register = () => {
       setAlert("Account Created Successfully!");
       setTimeout(() => navigate("/login"), 1200);
     } catch (err) {
-      const errorMsg = err.response?.data?.message || "Something went wrong";
+      let errorMsg = "Something went wrong";
+      if (err.response?.status === 503) {
+        errorMsg = "Service temporarily unavailable. Please try again later.";
+      } else if (err.response?.data?.message) {
+        errorMsg = err.response.data.message;
+      }
       setAlert(errorMsg);
     }
   };

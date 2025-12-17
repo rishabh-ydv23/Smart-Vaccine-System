@@ -21,7 +21,12 @@ app.use(
 app.use(express.json());
 
 // connect db
-connectDB();
+let dbConnected = false;
+connectDB().then(result => {
+  dbConnected = result;
+  // Pass db status to auth routes
+  authRoutes.setDbStatus(dbConnected);
+});
 
 // routes
 app.use("/api/auth", authRoutes);

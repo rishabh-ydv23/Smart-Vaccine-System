@@ -27,7 +27,13 @@ const Login = () => {
         navigate("/");
       }
     } catch (err) {
-      setError("Invalid Credentials");
+      if (err.response?.status === 503) {
+        setError("Service temporarily unavailable. Please try again later.");
+      } else if (err.response?.status === 401) {
+        setError("Invalid email or password");
+      } else {
+        setError("An error occurred. Please try again.");
+      }
     }
   };
 
