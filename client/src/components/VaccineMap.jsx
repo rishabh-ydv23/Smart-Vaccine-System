@@ -4,12 +4,12 @@ import api from '../api/axios';
 const VaccineMap = () => {
   const [vaccines, setVaccines] = useState([]);
   const [searchParams, setSearchParams] = useState({
-    lat: '28.6139',
-    lng: '77.2088',
+    lat: '30.9010', // Default to Amritsar, Punjab
+    lng: '75.8572',
     radius: '10',
     city: '',
     pinCode: '',
-    address: ''
+    address: 'Amritsar, Punjab'
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -94,11 +94,6 @@ const VaccineMap = () => {
           lng: lon,
           address
         });
-        
-        // Automatically search after geocoding
-        setTimeout(() => {
-          handleSearch({ preventDefault: () => {} });
-        }, 500);
       } else {
         setError('Could not find coordinates for the given address. Please try a different address.');
       }
@@ -117,6 +112,14 @@ const VaccineMap = () => {
     }
   };
 
+  // Generate Google Maps embed URL
+  const getMapUrl = () => {
+    if (searchParams.lat && searchParams.lng) {
+      return `https://www.google.com/maps/embed/v1/view?key=AIzaSyBS23bDQxAxa2sAoAUwBrgZDcb8h0sc98o&center=${searchParams.lat},${searchParams.lng}&zoom=12`;
+    }
+    return '';
+  };
+
   return (
     <div className="p-6">
       <h2 className="text-2xl font-bold mb-6 text-gray-800">Find Vaccination Centers</h2>
@@ -132,7 +135,7 @@ const VaccineMap = () => {
                 name="address"
                 value={searchParams.address}
                 onChange={handleInputChange}
-                placeholder="Enter complete address (e.g., 123 Main Street, New Delhi 110001)"
+                placeholder="Enter complete address (e.g., 123 Main Street, Amritsar 143001)"
                 className="flex-1 px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                 disabled={geocoding}
               />
@@ -155,7 +158,7 @@ const VaccineMap = () => {
                 name="lat"
                 value={searchParams.lat}
                 onChange={handleInputChange}
-                placeholder="28.6139"
+                placeholder="30.9010"
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                 readOnly
               />
@@ -168,7 +171,7 @@ const VaccineMap = () => {
                 name="lng"
                 value={searchParams.lng}
                 onChange={handleInputChange}
-                placeholder="77.2088"
+                placeholder="75.8572"
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                 readOnly
               />
@@ -207,8 +210,6 @@ const VaccineMap = () => {
             Show All Centers
           </button>
         </div>
-        
-        
       </div>
       
       {/* Error Message */}
@@ -256,17 +257,28 @@ const VaccineMap = () => {
         )}
       </div>
       
-      {/* Static Map Visualization */}
+      {/* Embedded Google Maps */}
       <div className="mt-8 bg-white rounded-lg shadow-md p-6">
         <h3 className="text-xl font-semibold mb-4 text-gray-800">Map View</h3>
-        <div className="bg-gray-100 border-2 border-dashed border-gray-300 rounded-lg h-96 flex items-center justify-center">
-          <div className="text-center">
-            <div className="text-5xl mb-4">🗺️</div>
-            <p className="text-gray-600">Interactive map would be displayed here</p>
-            <p className="text-gray-500 text-sm mt-2">
-              In a production environment, this would integrate with Google Maps or Leaflet
-            </p>
-          </div>
+        <div className="h-96 rounded-lg overflow-hidden border border-gray-300">
+          {searchParams.lat && searchParams.lng ? (
+            <iframe
+              width="100%"
+              height="100%"
+              frameBorder="0"
+              style={{ border: 0 }}
+              src={getMapUrl()}
+              allowFullScreen
+              title="Vaccination Centers Map"
+            ></iframe>
+          ) : (
+            <div className="flex items-center justify-center h-full bg-gray-100">
+              <p className="text-gray-500">Enter an address to view map</p>
+            </div>
+          )}
+        </div>
+        <div className="mt-4 text-sm text-gray-600">
+          <p>📍 Map showing location for: {searchParams.address || 'Selected coordinates'}</p>
         </div>
       </div>
     </div>
