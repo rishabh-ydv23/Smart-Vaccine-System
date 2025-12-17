@@ -1,16 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import api from '../api/axios';
-import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
-import 'leaflet/dist/leaflet.css';
-import L from 'leaflet';
-
-// Fix for default marker icons in Leaflet
-delete L.Icon.Default.prototype._getIconUrl;
-L.Icon.Default.mergeOptions({
-  iconRetinaUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon-2x.png',
-  iconUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon.png',
-  shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
-});
 
 const VaccineMap = () => {
   const [vaccines, setVaccines] = useState([]);
@@ -25,7 +14,6 @@ const VaccineMap = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [geocoding, setGeocoding] = useState(false);
-  const [mapCenter, setMapCenter] = useState([28.6139, 77.2088]);
 
   // Load all vaccines on component mount
   useEffect(() => {
@@ -47,7 +35,7 @@ const VaccineMap = () => {
   };
 
   const handleSearch = async (e) => {
-    e.preventDefault();
+    if (e.preventDefault) e.preventDefault();
     try {
       setLoading(true);
       const queryParams = new URLSearchParams();
@@ -268,51 +256,17 @@ const VaccineMap = () => {
         )}
       </div>
       
-      {/* Embedded Map Visualization */}
+      {/* Static Map Visualization */}
       <div className="mt-8 bg-white rounded-lg shadow-md p-6">
-        <h3 className="text-xl font-semibold mb-4 text-gray-800">Interactive Map</h3>
-        <div className="h-96 rounded-lg overflow-hidden border border-gray-300">
-          <MapContainer center={mapCenter} zoom={13} style={{ height: '100%', width: '100%' }}>
-            <TileLayer
-              url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-              attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-            />
-            
-            {/* User location marker */}
-            {searchParams.lat && searchParams.lng && (
-              <Marker position={[parseFloat(searchParams.lat), parseFloat(searchParams.lng)]}>
-                <Popup>
-                  <div className="font-semibold">Your Location</div>
-                  <div className="text-sm">{searchParams.address || 'Selected location'}</div>
-                </Popup>
-              </Marker>
-            )}
-            
-            {/* Vaccination centers markers */}
-            {vaccines.map((vaccine) => {
-              if (vaccine.location && vaccine.location.coordinates) {
-                return (
-                  <Marker 
-                    key={vaccine._id} 
-                    position={[vaccine.location.coordinates[1], vaccine.location.coordinates[0]]}
-                  >
-                    <Popup>
-                      <div className="font-semibold">{vaccine.name}</div>
-                      <div className="text-sm">{vaccine.location.address}</div>
-                      <div className="text-sm">{vaccine.location.city}, {vaccine.location.pinCode}</div>
-                      <div className="text-sm mt-1">Doses Required: {vaccine.doseRequired}</div>
-                      <div className="text-sm">Available: {vaccine.availableQuantity}</div>
-                    </Popup>
-                  </Marker>
-                );
-              }
-              return null;
-            })}
-          </MapContainer>
-        </div>
-        <div className="mt-4 text-sm text-gray-600">
-          <p>📍 <span className="font-medium">Blue marker:</span> Your location | 
-          <span className="font-medium">Red markers:</span> Vaccination centers</p>
+        <h3 className="text-xl font-semibold mb-4 text-gray-800">Map View</h3>
+        <div className="bg-gray-100 border-2 border-dashed border-gray-300 rounded-lg h-96 flex items-center justify-center">
+          <div className="text-center">
+            <div className="text-5xl mb-4">🗺️</div>
+            <p className="text-gray-600">Interactive map would be displayed here</p>
+            <p className="text-gray-500 text-sm mt-2">
+              In a production environment, this would integrate with Google Maps or Leaflet
+            </p>
+          </div>
         </div>
       </div>
     </div>
