@@ -14,6 +14,67 @@ router.get('/', async (req, res) => {
   }
 });
 
+// GET /api/vaccines/nearby - find nearby vaccination centers
+router.get('/nearby', async (req, res) => {
+  try {
+    const { lat, lng, radius = 10, city, pinCode } = req.query;
+    
+    let query = {};
+    
+    // Search by coordinates and radius
+    if (lat && lng) {
+      query.location = {
+        $near: {
+          $geometry: {
+            type: 'Point',
+            coordinates: [parseFloat(lng), parseFloat(lat)]
+          },
+          $maxDistance: radius * 1000 // Convert km to meters
+        }
+      };
+    }
+    
+    // Search by city
+    if (city) {
+      query['location.city'] = new RegExp(city, 'i');
+    }
+    
+    // Search by PIN code
+    if (pinCode) {
+      query['location.pinCode'] = pinCode;
+    }
+    
+    const vaccines = await Vaccine.find(query);
+    res.json(vaccines);
+  } catch (err) {
+    console.error('Nearby search error:', err);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
+// GET /api/vaccines/search - search by city or PIN code
+router.get('/search', async (req, res) => {
+  try {
+    const { city, pinCode } = req.query;
+    
+    let query = {};
+    
+    if (city) {
+      query['location.city'] = new RegExp(city, 'i');
+    }
+    
+    if (pinCode) {
+      query['location.pinCode'] = pinCode;
+    }
+    
+    const vaccines = await Vaccine.find(query);
+    res.json(vaccines);
+  } catch (err) {
+    console.error('Search error:', err);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
 // POST /api/vaccines - admin only
 router.post('/', protect, adminOnly, async (req, res) => {
   try {

@@ -2,8 +2,9 @@ import { useEffect, useState } from "react";
 import { useAuth } from "../context/AuthContext";
 import api from "../api/axios";
 import VaccineList from "../components/VaccineList";
+import VaccineMap from "../components/VaccineMap";
 import React from "react";
-import { FiLogOut, FiCalendar, FiUser, FiActivity, FiMessageSquare, FiHome, FiMenu, FiX } from "react-icons/fi";
+import { FiLogOut, FiCalendar, FiUser, FiActivity, FiMessageSquare, FiHome, FiMenu, FiX, FiMapPin } from "react-icons/fi";
 
 const Dashboard = () => {
   const { user, logout } = useAuth();
@@ -124,9 +125,21 @@ const Dashboard = () => {
               activeTab === 'appointments'
                 ? 'bg-white text-purple-600 shadow-md'
                 : 'text-white hover:bg-white/10'
-            }`}
-          >
+            }`}>
             <FiCalendar /> My Appointments
+          </button>
+
+          <button
+            onClick={() => {
+              setActiveTab('map');
+              setSidebarOpen(false);
+            }}
+            className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg font-medium transition-all ${
+              activeTab === 'map'
+                ? 'bg-white text-purple-600 shadow-md'
+                : 'text-white hover:bg-white/10'
+            }`}>
+            <FiMapPin /> Find Centers
           </button>
         </nav>
 
@@ -158,12 +171,14 @@ const Dashboard = () => {
               {activeTab === 'vaccine' && '💉 Book Vaccine Appointment'}
               {activeTab === 'consultation' && '👨‍⚕️ Doctor Consultation'}
               {activeTab === 'appointments' && '📅 My Appointments'}
+              {activeTab === 'map' && '📍 Find Vaccination Centers'}
             </h2>
             <p className="text-white/70 text-xs lg:text-sm mt-1">
               {activeTab === 'home' && 'Welcome to your health dashboard'}
               {activeTab === 'vaccine' && 'Schedule your vaccination appointment'}
               {activeTab === 'consultation' && 'Get medical advice from our doctors'}
               {activeTab === 'appointments' && 'View and manage your appointments'}
+              {activeTab === 'map' && 'Find vaccination centers near you'}
             </p>
           </div>
       </header>
@@ -359,6 +374,13 @@ const Dashboard = () => {
               </table>
             </div>
           )}
+          </section>
+        )}
+
+        {/* Map Tab */}
+        {activeTab === 'map' && (
+          <section className="bg-white/90 backdrop-blur-lg rounded-2xl shadow-xl p-4 lg:p-6 border border-white/30">
+            <VaccineMap />
           </section>
         )}
 
