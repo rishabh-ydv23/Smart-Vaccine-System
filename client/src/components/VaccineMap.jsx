@@ -1,17 +1,31 @@
 import React, { useState, useEffect } from 'react';
 import api from '../api/axios';
+import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
+import 'leaflet/dist/leaflet.css';
+import L from 'leaflet';
+
+// Fix for default marker icons in Leaflet
+delete L.Icon.Default.prototype._getIconUrl;
+L.Icon.Default.mergeOptions({
+  iconRetinaUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon-2x.png',
+  iconUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon.png',
+  shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
+});
 
 const VaccineMap = () => {
   const [vaccines, setVaccines] = useState([]);
   const [searchParams, setSearchParams] = useState({
-    lat: '',
-    lng: '',
+    lat: '28.6139',
+    lng: '77.2088',
     radius: '10',
     city: '',
-    pinCode: ''
+    pinCode: '',
+    address: ''
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [geocoding, setGeocoding] = useState(false);
+  const [mapCenter, setMapCenter] = useState([28.6139, 77.2088]);
 
   // Load all vaccines on component mount
   useEffect(() => {
@@ -70,93 +84,143 @@ const VaccineMap = () => {
     });
   };
 
+  // Function to geocode address to coordinates
+  const geocodeAddress = async (address) => {
+    setGeocoding(true);
+    setError('');
+    
+    try {
+      // Using OpenStreetMap Nominatim API for geocoding
+      const encodedAddress = encodeURIComponent(address);
+      const response = await fetch(
+        `https://nominatim.openstreetmap.org/search?format=json&q=${encodedAddress}&limit=1`
+      );
+      
+      const data = await response.json();
+      
+      if (data && data.length > 0) {
+        const { lat, lon } = data[0];
+        setSearchParams({
+          ...searchParams,
+          lat,
+          lng: lon,
+          address
+        });
+        
+        // Automatically search after geocoding
+        setTimeout(() => {
+          handleSearch({ preventDefault: () => {} });
+        }, 500);
+      } else {
+        setError('Could not find coordinates for the given address. Please try a different address.');
+      }
+    } catch (err) {
+      console.error('Geocoding error:', err);
+      setError('Failed to geocode address. Please try again.');
+    } finally {
+      setGeocoding(false);
+    }
+  };
+
+  const handleAddressSubmit = (e) => {
+    e.preventDefault();
+    if (searchParams.address.trim()) {
+      geocodeAddress(searchParams.address);
+    }
+  };
+
   return (
     <div className="p-6">
       <h2 className="text-2xl font-bold mb-6 text-gray-800">Find Vaccination Centers</h2>
       
       {/* Search Form */}
       <div className="bg-white rounded-lg shadow-md p-6 mb-6">
-        <form onSubmit={handleSearch} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Latitude</label>
-            <input
-              type="text"
-              name="lat"
-              value={searchParams.lat}
-              onChange={handleInputChange}
-              placeholder="28.6139"
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
-          </div>
+        <div className="mb-6">
+          <h3 className="text-lg font-semibold text-gray-800 mb-3">Find Nearby Vaccination Centers</h3>
+          <form onSubmit={handleAddressSubmit} className="mb-4">
+            <div className="flex gap-2">
+              <input
+                type="text"
+                name="address"
+                value={searchParams.address}
+                onChange={handleInputChange}
+                placeholder="Enter complete address (e.g., 123 Main Street, New Delhi 110001)"
+                className="flex-1 px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                disabled={geocoding}
+              />
+              <button
+                type="submit"
+                disabled={geocoding || !searchParams.address.trim()}
+                className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50"
+              >
+                {geocoding ? 'Locating...' : 'Find Centers'}
+              </button>
+            </div>
+            <p className="text-gray-500 text-sm mt-2">Enter your complete address to find nearby vaccination centers and government hospitals</p>
+          </form>
           
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Longitude</label>
-            <input
-              type="text"
-              name="lng"
-              value={searchParams.lng}
-              onChange={handleInputChange}
-              placeholder="77.2088"
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Latitude</label>
+              <input
+                type="text"
+                name="lat"
+                value={searchParams.lat}
+                onChange={handleInputChange}
+                placeholder="28.6139"
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                readOnly
+              />
+            </div>
+            
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Longitude</label>
+              <input
+                type="text"
+                name="lng"
+                value={searchParams.lng}
+                onChange={handleInputChange}
+                placeholder="77.2088"
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                readOnly
+              />
+            </div>
+            
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Radius (km)</label>
+              <select
+                name="radius"
+                value={searchParams.radius}
+                onChange={handleInputChange}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              >
+                <option value="5">5 km</option>
+                <option value="10">10 km</option>
+                <option value="20">20 km</option>
+                <option value="50">50 km</option>
+              </select>
+            </div>
           </div>
-          
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Radius (km)</label>
-            <select
-              name="radius"
-              value={searchParams.radius}
-              onChange={handleInputChange}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-            >
-              <option value="5">5 km</option>
-              <option value="10">10 km</option>
-              <option value="20">20 km</option>
-              <option value="50">50 km</option>
-            </select>
-          </div>
-          
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">City</label>
-            <input
-              type="text"
-              name="city"
-              value={searchParams.city}
-              onChange={handleInputChange}
-              placeholder="New Delhi"
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
-          </div>
-          
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">PIN Code</label>
-            <input
-              type="text"
-              name="pinCode"
-              value={searchParams.pinCode}
-              onChange={handleInputChange}
-              placeholder="110001"
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
-          </div>
-        </form>
+        </div>
         
-        <div className="mt-4 flex justify-end">
+        <div className="flex gap-2">
           <button
             onClick={handleSearch}
-            disabled={loading}
-            className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50"
+            disabled={loading || !searchParams.lat || !searchParams.lng}
+            className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 disabled:opacity-50"
           >
-            {loading ? 'Searching...' : 'Search'}
+            {loading ? 'Searching...' : 'Search Nearby Centers'}
           </button>
           <button
             onClick={loadVaccines}
             disabled={loading}
-            className="ml-2 px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-500 disabled:opacity-50"
+            className="px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-500 disabled:opacity-50"
           >
-            Clear
+            Show All Centers
           </button>
         </div>
+        
+        
       </div>
       
       {/* Error Message */}
@@ -204,17 +268,51 @@ const VaccineMap = () => {
         )}
       </div>
       
-      {/* Simple Map Visualization */}
+      {/* Embedded Map Visualization */}
       <div className="mt-8 bg-white rounded-lg shadow-md p-6">
-        <h3 className="text-xl font-semibold mb-4 text-gray-800">Map View</h3>
-        <div className="bg-gray-100 border-2 border-dashed border-gray-300 rounded-lg h-96 flex items-center justify-center">
-          <div className="text-center">
-            <div className="text-5xl mb-4">🗺️</div>
-            <p className="text-gray-600">Interactive map would be displayed here</p>
-            <p className="text-gray-500 text-sm mt-2">
-              In a production environment, this would integrate with Google Maps or Leaflet
-            </p>
-          </div>
+        <h3 className="text-xl font-semibold mb-4 text-gray-800">Interactive Map</h3>
+        <div className="h-96 rounded-lg overflow-hidden border border-gray-300">
+          <MapContainer center={mapCenter} zoom={13} style={{ height: '100%', width: '100%' }}>
+            <TileLayer
+              url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+              attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+            />
+            
+            {/* User location marker */}
+            {searchParams.lat && searchParams.lng && (
+              <Marker position={[parseFloat(searchParams.lat), parseFloat(searchParams.lng)]}>
+                <Popup>
+                  <div className="font-semibold">Your Location</div>
+                  <div className="text-sm">{searchParams.address || 'Selected location'}</div>
+                </Popup>
+              </Marker>
+            )}
+            
+            {/* Vaccination centers markers */}
+            {vaccines.map((vaccine) => {
+              if (vaccine.location && vaccine.location.coordinates) {
+                return (
+                  <Marker 
+                    key={vaccine._id} 
+                    position={[vaccine.location.coordinates[1], vaccine.location.coordinates[0]]}
+                  >
+                    <Popup>
+                      <div className="font-semibold">{vaccine.name}</div>
+                      <div className="text-sm">{vaccine.location.address}</div>
+                      <div className="text-sm">{vaccine.location.city}, {vaccine.location.pinCode}</div>
+                      <div className="text-sm mt-1">Doses Required: {vaccine.doseRequired}</div>
+                      <div className="text-sm">Available: {vaccine.availableQuantity}</div>
+                    </Popup>
+                  </Marker>
+                );
+              }
+              return null;
+            })}
+          </MapContainer>
+        </div>
+        <div className="mt-4 text-sm text-gray-600">
+          <p>📍 <span className="font-medium">Blue marker:</span> Your location | 
+          <span className="font-medium">Red markers:</span> Vaccination centers</p>
         </div>
       </div>
     </div>
