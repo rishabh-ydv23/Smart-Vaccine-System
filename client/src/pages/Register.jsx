@@ -2,11 +2,11 @@ import { useState } from "react";
 import api from "../api/axios";
 import { useNavigate } from "react-router-dom";
 import React from "react";
-import { FiUser, FiMail, FiLock } from "react-icons/fi";
+import { FiUser, FiMail, FiLock, FiCreditCard } from "react-icons/fi";
 
 const Register = () => {
   const navigate = useNavigate();
-  const [form, setForm] = useState({ name: "", email: "", password: "" });
+  const [form, setForm] = useState({ name: "", email: "", password: "", governmentId: "" });
   const [alert, setAlert] = useState("");
 
   const handleChange = (e) => {
@@ -85,6 +85,28 @@ const Register = () => {
                 required
               />
             </div>
+          </div>
+
+          {/* Government ID */}
+          <div>
+            <label className="block text-xs md:text-sm font-medium text-white mb-1">
+              Government ID
+            </label>
+            <div
+              className="flex items-center bg-white/80 p-2.5 md:p-3 rounded-xl 
+              border border-gray-300 focus-within:border-teal-600 transition-all"
+            >
+              <FiCreditCard className="text-gray-600 mr-2 md:mr-3 text-base md:text-lg" />
+              <input
+                name="governmentId"
+                type="text"
+                placeholder="Enter your government ID"
+                className="w-full bg-transparent outline-none text-gray-800 text-sm md:text-base"
+                onChange={handleChange}
+                required
+              />
+            </div>
+            <p className="text-white/70 text-xs mt-1">Enter a unique government ID (e.g., passport, driver's license)</p>
           </div>
 
           {/* Email */}

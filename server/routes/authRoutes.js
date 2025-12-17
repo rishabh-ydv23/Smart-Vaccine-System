@@ -22,24 +22,34 @@ router.post('/register', async (req, res) => {
   }
   
   try {
-    const { name, email, password, role } = req.body;
+    const { name, email, password, governmentId, role } = req.body;
     console.log('Registration attempt for email:', email);
 
-    const exists = await User.findOne({ email });
-    if (exists) return res.status(400).json({ message: 'User already exists' });
+    // Check if user with email already exists
+    const emailExists = await User.findOne({ email });
+    if (emailExists) return res.status(400).json({ message: 'User with this email already exists' });
+    
+    // Check if user with government ID already exists
+    const govIdExists = await User.findOne({ governmentId });
+    if (govIdExists) return res.status(400).json({ message: 'User with this government ID already exists' });
 
-    const user = await User.create({ name, email, password, role: role || 'user' });
+    const user = await User.create({ name, email, password, governmentId, role: role || 'user' });
     console.log('User created successfully:', email);
 
     res.status(201).json({
       _id: user._id,
       name: user.name,
       email: user.email,
+      governmentId: user.governmentId,
       role: user.role,
       token: generateToken(user._id, user.role)
     });
   } catch (err) {
     console.error('Registration error:', err);
+    if (err.code === 11000) {
+      // Duplicate key error
+      return res.status(400).json({ message: 'User with this email or government ID already exists' });
+    }
     res.status(500).json({ message: 'Server error' });
   }
 });
