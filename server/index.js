@@ -20,13 +20,49 @@ app.use(
 );
 app.use(express.json());
 
-// connect db
+// connect db with retry mechanism
 let dbConnected = false;
-connectDB().then(result => {
-  dbConnected = result;
-  // Pass db status to auth routes
-  authRoutes.setDbStatus(dbConnected);
-});
+let retryCount = 0;
+const maxRetries = 5;
+
+const initializeDB = async () => {
+  try {
+    console.log(`Attempting to connect to MongoDB (attempt ${retryCount + 1}/${maxRetries})...`);
+    const result = await connectDB();
+    dbConnected = result;
+    
+    // Pass db status to auth routes
+    authRoutes.setDbStatus(dbConnected);
+    
+    if (dbConnected) {
+      console.log("✅ Database connection established");
+      retryCount = 0; // Reset retry count on success
+    } else {
+      throw new Error("Database connection failed");
+    }
+  } catch (err) {
+    console.error("❌ Database connection error:", err.message);
+    retryCount++;
+    
+    if (retryCount < maxRetries) {
+      console.log(`🔁 Retrying in 5 seconds... (${retryCount}/${maxRetries})`);
+      setTimeout(initializeDB, 5000);
+    } else {
+      console.log("⚠️  Max retries reached. Running in offline mode - authentication will not work");
+    }
+  }
+};
+
+// Initialize database connection
+initializeDB();
+
+// Periodically check database connection
+setInterval(async () => {
+  if (!dbConnected) {
+    console.log("🔄 Checking database connection...");
+    await initializeDB();
+  }
+}, 30000); // Check every 30 seconds
 
 // routes
 app.use("/api/auth", authRoutes);
@@ -37,6 +73,15 @@ app.use("/api/appointments", appointmentRoutes);
 // test route
 app.get("/", (req, res) => {
   res.send("Smart Vaccine API running ✅");
+});
+
+// Health check route
+app.get("/health", (req, res) => {
+  res.status(200).json({ 
+    status: "OK", 
+    dbConnected,
+    timestamp: new Date().toISOString()
+  });
 });
 
 const PORT = process.env.PORT || 5000;

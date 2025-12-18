@@ -15,12 +15,19 @@ const generateToken = (id, role) => {
   return jwt.sign({ id, role }, process.env.JWT_SECRET, { expiresIn: '7d' });
 };
 
-// POST /api/auth/register
-router.post('/register', async (req, res) => {
+// Middleware to check database connection
+const checkDbConnection = (req, res, next) => {
   if (!dbConnected) {
-    return res.status(503).json({ message: 'Database connection unavailable. Please contact administrator.' });
+    return res.status(503).json({ 
+      message: 'Service temporarily unavailable. Database connection error.',
+      suggestion: 'Please try again later or contact system administrator.'
+    });
   }
-  
+  next();
+};
+
+// POST /api/auth/register
+router.post('/register', checkDbConnection, async (req, res) => {
   try {
     const { name, email, password, governmentId, role } = req.body;
     console.log('Registration attempt for email:', email);
@@ -50,16 +57,15 @@ router.post('/register', async (req, res) => {
       // Duplicate key error
       return res.status(400).json({ message: 'User with this email or government ID already exists' });
     }
-    res.status(500).json({ message: 'Server error' });
+    res.status(500).json({ 
+      message: 'Server error during registration',
+      suggestion: 'Please try again later'
+    });
   }
 });
 
 // POST /api/auth/login
-router.post('/login', async (req, res) => {
-  if (!dbConnected) {
-    return res.status(503).json({ message: 'Database connection unavailable. Please contact administrator.' });
-  }
-  
+router.post('/login', checkDbConnection, async (req, res) => {
   try {
     const { email, password } = req.body;
     console.log('Login attempt for email:', email);
@@ -87,7 +93,10 @@ router.post('/login', async (req, res) => {
     });
   } catch (err) {
     console.error('Login error:', err);
-    res.status(500).json({ message: 'Server error' });
+    res.status(500).json({ 
+      message: 'Server error during login',
+      suggestion: 'Please try again later'
+    });
   }
 });
 
