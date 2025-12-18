@@ -150,38 +150,47 @@ const VaccineMap = () => {
     }
   };
 
-  // Generate static map image URL as fallback
-  const getStaticMapUrl = () => {
-    if (searchParams.lat && searchParams.lng) {
-      const markers = [];
-      
-      // Add user location marker
-      markers.push(`pin-s-large+FF0000(${searchParams.lng},${searchParams.lat})`);
-      
-      // Add hospital markers
-      hospitals.forEach(hospital => {
-        if (hospital.location && hospital.location.coordinates) {
-          const lat = hospital.location.coordinates[1];
-          const lng = hospital.location.coordinates[0];
-          markers.push(`pin-s-large+0000FF(${lng},${lat})`);
-        }
-      });
-      
-      const markerParam = markers.join('~');
-      return `https://maps.geoapify.com/v1/staticmap?style=osm-bright&width=600&height=400&center=lonlat:${searchParams.lng},${searchParams.lat}&zoom=12&marker=${markerParam}&apiKey=YOUR_API_KEY_HERE`;
-    }
-    return '';
-  };
-
   // Handle iframe load error
   const handleMapError = () => {
-    setMapError('Unable to load map. Showing static map instead.');
+    setMapError('Unable to load map. Please try again.');
     setMapLoaded(false);
   };
 
   // Handle iframe load success
   const handleMapLoad = () => {
     setMapLoaded(true);
+    setMapError('');
+  };
+
+  // Generate map URL
+  const getMapUrl = () => {
+    if (searchParams.lat && searchParams.lng) {
+      const delta = 0.05;
+      const bbox = [
+        parseFloat(searchParams.lng) - delta,
+        parseFloat(searchParams.lat) - delta,
+        parseFloat(searchParams.lng) + delta,
+        parseFloat(searchParams.lat) + delta
+      ];
+      
+      // Create URL with markers for user location and hospitals
+      let url = `https://www.openstreetmap.org/export/embed.html?bbox=${bbox.join(',')}&layer=mapnik`;
+      
+      // Add marker for user location
+      url += `&marker=${searchParams.lat},${searchParams.lng}`;
+      
+      // Add markers for hospitals
+      hospitals.forEach(hospital => {
+        if (hospital.location && hospital.location.coordinates) {
+          const lat = hospital.location.coordinates[1];
+          const lng = hospital.location.coordinates[0];
+          url += `&marker=${lat},${lng}`;
+        }
+      });
+      
+      return url;
+    }
+    return '';
   };
 
   return (
@@ -337,49 +346,18 @@ const VaccineMap = () => {
           
           <div className="h-96 rounded-lg overflow-hidden border border-gray-300 relative">
             {searchParams.lat && searchParams.lng ? (
-              <>
-                {!mapError ? (
-                  <iframe
-                    width="100%"
-                    height="100%"
-                    frameBorder="0"
-                    scrolling="no"
-                    marginHeight="0"
-                    marginWidth="0"
-                    src={`https://www.openstreetmap.org/export/embed.html?bbox=${searchParams.lng - 0.05},${searchParams.lat - 0.05},${searchParams.lng + 0.05},${searchParams.lat + 0.05}&layer=mapnik&marker=${searchParams.lat},${searchParams.lng}`}
-                    title="Government Hospitals Map"
-                    onError={handleMapError}
-                    onLoad={handleMapLoad}
-                    className={mapLoaded ? '' : 'hidden'}
-                  ></iframe>
-                ) : null}
-                
-                {/* Fallback static map or error message */}
-                <div className={`${mapError || !mapLoaded ? 'flex' : 'hidden'} items-center justify-center h-full bg-gray-100`}>
-                  <div className="text-center p-4">
-                    <div className="text-4xl mb-2">🗺️</div>
-                    <p className="text-gray-600">{mapError || 'Loading map...'}</p>
-                    <div className="mt-4">
-                      <button 
-                        onClick={() => {
-                          setMapError('');
-                          setMapLoaded(false);
-                          window.location.reload();
-                        }} 
-                        className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 mr-2"
-                      >
-                        Retry Map
-                      </button>
-                      <button 
-                        onClick={loadPunjabHospitals} 
-                        className="px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700"
-                      >
-                        Show All Punjab Hospitals
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              </>
+              <iframe
+                width="100%"
+                height="100%"
+                frameBorder="0"
+                scrolling="no"
+                marginHeight="0"
+                marginWidth="0"
+                src={getMapUrl()}
+                title="Government Hospitals Map"
+                onError={handleMapError}
+                onLoad={handleMapLoad}
+              ></iframe>
             ) : (
               <div className="flex items-center justify-center h-full bg-gray-100">
                 <div className="text-center p-4">
