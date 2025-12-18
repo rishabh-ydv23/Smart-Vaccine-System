@@ -3,8 +3,9 @@ import { useAuth } from "../context/AuthContext";
 import api from "../api/axios";
 import VaccineList from "../components/VaccineList";
 import VaccineMap from "../components/VaccineMap";
+import NearbyHospitalsFinder from "../components/NearbyHospitalsFinder";
 import React from "react";
-import { FiLogOut, FiCalendar, FiUser, FiActivity, FiMessageSquare, FiHome, FiMenu, FiX, FiMapPin } from "react-icons/fi";
+import { FiLogOut, FiCalendar, FiUser, FiActivity, FiMessageSquare, FiHome, FiMenu, FiX, FiMapPin, FiCrosshair } from "react-icons/fi";
 
 const Dashboard = () => {
   const { user, logout } = useAuth();
@@ -141,6 +142,19 @@ const Dashboard = () => {
             }`}>
             <FiMapPin /> Find Centers
           </button>
+
+          <button
+            onClick={() => {
+              setActiveTab('nearby');
+              setSidebarOpen(false);
+            }}
+            className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg font-medium transition-all ${
+              activeTab === 'nearby'
+                ? 'bg-white text-purple-600 shadow-md'
+                : 'text-white hover:bg-white/10'
+            }`}>
+            <FiCrosshair /> Nearby Hospitals
+          </button>
         </nav>
 
         <div className="pt-6 mt-6 border-t border-white/30">
@@ -172,6 +186,7 @@ const Dashboard = () => {
               {activeTab === 'consultation' && '👨‍⚕️ Doctor Consultation'}
               {activeTab === 'appointments' && '📅 My Appointments'}
               {activeTab === 'map' && '📍 Find Vaccination Centers'}
+              {activeTab === 'nearby' && '🏥 Nearby Government Hospitals'}
             </h2>
             <p className="text-white/70 text-xs lg:text-sm mt-1">
               {activeTab === 'home' && 'Welcome to your health dashboard'}
@@ -179,6 +194,7 @@ const Dashboard = () => {
               {activeTab === 'consultation' && 'Get medical advice from our doctors'}
               {activeTab === 'appointments' && 'View and manage your appointments'}
               {activeTab === 'map' && 'Find vaccination centers near you'}
+              {activeTab === 'nearby' && 'Find the nearest government hospital using your location'}
             </p>
           </div>
       </header>
@@ -381,6 +397,13 @@ const Dashboard = () => {
         {activeTab === 'map' && (
           <section className="bg-white/90 backdrop-blur-lg rounded-2xl shadow-xl p-4 lg:p-6 border border-white/30">
             <VaccineMap />
+          </section>
+        )}
+
+        {/* Nearby Hospitals Tab */}
+        {activeTab === 'nearby' && (
+          <section className="bg-white/90 backdrop-blur-lg rounded-2xl shadow-xl p-4 lg:p-6 border border-white/30">
+            <NearbyHospitalsFinder />
           </section>
         )}
 
