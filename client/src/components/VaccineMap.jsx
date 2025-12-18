@@ -15,19 +15,36 @@ const VaccineMap = () => {
   const [error, setError] = useState('');
   const [geocoding, setGeocoding] = useState(false);
   const [mapError, setMapError] = useState('');
-  const [mapLoaded, setMapLoaded] = useState(false);
 
   // Load all government hospitals in Punjab on component mount
   useEffect(() => {
     loadPunjabHospitals();
   }, []);
 
+  // Calculate distance between two points using Haversine formula
+  const calculateDistance = (lat1, lon1, lat2, lon2) => {
+    const R = 6371; // Radius of the earth in km
+    const dLat = deg2rad(lat2 - lat1);
+    const dLon = deg2rad(lon2 - lon1);
+    const a =
+      Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+      Math.cos(deg2rad(lat1)) * Math.cos(deg2rad(lat2)) *
+      Math.sin(dLon / 2) * Math.sin(dLon / 2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    const d = R * c; // Distance in km
+    return d;
+  };
+
+  const deg2rad = (deg) => {
+    return deg * (Math.PI / 180);
+  };
+
   const loadPunjabHospitals = async () => {
     try {
       setLoading(true);
       // Load all hospitals (government hospitals in Punjab)
       const { data } = await api.get('/vaccines');
-      // Filter for government hospitals in Punjab
+      // Filter for government hospitals in Punjab and add distance
       const punjabHospitals = data.filter(hospital => 
         hospital.location && 
         (hospital.location.city.includes('Amritsar') || 
@@ -36,7 +53,27 @@ const VaccineMap = () => {
          hospital.location.city.includes('Jalandhar') || 
          hospital.location.city.includes('Bathinda') ||
          hospital.location.pinCode.startsWith('14'))
-      );
+      ).map(hospital => {
+        if (hospital.location && hospital.location.coordinates) {
+          const distance = calculateDistance(
+            parseFloat(searchParams.lat),
+            parseFloat(searchParams.lng),
+            hospital.location.coordinates[1],
+            hospital.location.coordinates[0]
+          );
+          return { ...hospital, distance: distance.toFixed(2) };
+        }
+        return hospital;
+      });
+      
+      // Sort by distance
+      punjabHospitals.sort((a, b) => {
+        if (a.distance && b.distance) {
+          return parseFloat(a.distance) - parseFloat(b.distance);
+        }
+        return 0;
+      });
+      
       setHospitals(punjabHospitals);
       setError('');
     } catch (err) {
@@ -66,7 +103,7 @@ const VaccineMap = () => {
       }
       
       const { data } = await api.get(`/vaccines/nearby?${queryParams.toString()}`);
-      // Filter for government hospitals
+      // Filter for government hospitals and add distance
       const nearbyHospitals = data.filter(hospital => 
         hospital.location && 
         (hospital.location.city.includes('Amritsar') || 
@@ -75,7 +112,27 @@ const VaccineMap = () => {
          hospital.location.city.includes('Jalandhar') || 
          hospital.location.city.includes('Bathinda') ||
          hospital.location.pinCode.startsWith('14'))
-      );
+      ).map(hospital => {
+        if (hospital.location && hospital.location.coordinates) {
+          const distance = calculateDistance(
+            parseFloat(searchParams.lat),
+            parseFloat(searchParams.lng),
+            hospital.location.coordinates[1],
+            hospital.location.coordinates[0]
+          );
+          return { ...hospital, distance: distance.toFixed(2) };
+        }
+        return hospital;
+      });
+      
+      // Sort by distance
+      nearbyHospitals.sort((a, b) => {
+        if (a.distance && b.distance) {
+          return parseFloat(a.distance) - parseFloat(b.distance);
+        }
+        return 0;
+      });
+      
       setHospitals(nearbyHospitals);
       setError('');
     } catch (err) {
@@ -98,7 +155,6 @@ const VaccineMap = () => {
     setGeocoding(true);
     setError('');
     setMapError('');
-    setMapLoaded(false);
     
     try {
       // Extract PIN code if present in address
@@ -150,19 +206,7 @@ const VaccineMap = () => {
     }
   };
 
-  // Handle iframe load error
-  const handleMapError = () => {
-    setMapError('Unable to load map. Please try again.');
-    setMapLoaded(false);
-  };
-
-  // Handle iframe load success
-  const handleMapLoad = () => {
-    setMapLoaded(true);
-    setMapError('');
-  };
-
-  // Generate map URL
+  // Generate map URL WITHOUT labels (to avoid parsing errors)
   const getMapUrl = () => {
     if (searchParams.lat && searchParams.lng) {
       const delta = 0.05;
@@ -173,14 +217,15 @@ const VaccineMap = () => {
         parseFloat(searchParams.lat) + delta
       ];
       
-      // Create URL with markers for user location and hospitals
+      // Create base URL
       let url = `https://www.openstreetmap.org/export/embed.html?bbox=${bbox.join(',')}&layer=mapnik`;
       
-      // Add marker for user location
+      // Add marker for user location (WITHOUT label to avoid parsing errors)
       url += `&marker=${searchParams.lat},${searchParams.lng}`;
       
-      // Add markers for hospitals
-      hospitals.forEach(hospital => {
+      // Add markers for hospitals (WITHOUT labels to avoid parsing errors)
+      const limitedHospitals = hospitals.slice(0, 10); // Further limit to avoid URL issues
+      limitedHospitals.forEach((hospital, index) => {
         if (hospital.location && hospital.location.coordinates) {
           const lat = hospital.location.coordinates[1];
           const lng = hospital.location.coordinates[0];
@@ -188,9 +233,20 @@ const VaccineMap = () => {
         }
       });
       
+      console.log('Generated Map URL:', url);
       return url;
     }
     return '';
+  };
+
+  // Handle iframe load error
+  const handleMapError = () => {
+    setMapError('Unable to load map. Please try again or check your internet connection.');
+  };
+
+  // Handle iframe load success
+  const handleMapLoad = () => {
+    setMapError('');
   };
 
   return (
@@ -319,6 +375,9 @@ const VaccineMap = () => {
                       <p><span className="font-medium">City:</span> {hospital.location.city}</p>
                       <p><span className="font-medium">PIN Code:</span> {hospital.location.pinCode}</p>
                       <p><span className="font-medium">Coordinates:</span> {hospital.location.coordinates[1]}, {hospital.location.coordinates[0]}</p>
+                      {hospital.distance && (
+                        <p><span className="font-medium">Distance:</span> {hospital.distance} km</p>
+                      )}
                     </>
                   )}
                 </div>
@@ -346,18 +405,38 @@ const VaccineMap = () => {
           
           <div className="h-96 rounded-lg overflow-hidden border border-gray-300 relative">
             {searchParams.lat && searchParams.lng ? (
-              <iframe
-                width="100%"
-                height="100%"
-                frameBorder="0"
-                scrolling="no"
-                marginHeight="0"
-                marginWidth="0"
-                src={getMapUrl()}
-                title="Government Hospitals Map"
-                onError={handleMapError}
-                onLoad={handleMapLoad}
-              ></iframe>
+              <>
+                {mapError ? (
+                  <div className="flex items-center justify-center h-full bg-gray-100">
+                    <div className="text-center p-4">
+                      <div className="text-4xl mb-2">🗺️</div>
+                      <p className="text-gray-600">{mapError}</p>
+                      <button 
+                        onClick={() => {
+                          setMapError('');
+                          window.location.reload();
+                        }} 
+                        className="mt-4 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+                      >
+                        Retry Map
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                  <iframe
+                    width="100%"
+                    height="100%"
+                    frameBorder="0"
+                    scrolling="no"
+                    marginHeight="0"
+                    marginWidth="0"
+                    src={getMapUrl()}
+                    title="Government Hospitals Map"
+                    onError={handleMapError}
+                    onLoad={handleMapLoad}
+                  ></iframe>
+                )}
+              </>
             ) : (
               <div className="flex items-center justify-center h-full bg-gray-100">
                 <div className="text-center p-4">
