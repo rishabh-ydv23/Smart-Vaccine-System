@@ -47,6 +47,7 @@ const AppointmentManager = () => {
                       a.status === 'approved' ? 'bg-green-100 text-green-700' :
                       a.status === 'rejected' ? 'bg-red-100 text-red-700' :
                       a.status === 'completed' ? 'bg-blue-100 text-blue-700' :
+                      a.status === 'vaccinated' ? 'bg-purple-100 text-purple-700' :
                       'bg-yellow-100 text-yellow-700'
                     }`}>
                       {a.status}
@@ -69,7 +70,33 @@ const AppointmentManager = () => {
                         </button>
                       </div>
                     )}
-                    {a.status !== "pending" && (
+                    {a.status === "approved" && (
+                      <div className="flex gap-2">
+                        <button 
+                          onClick={() => updateStatus(a._id, "vaccinated")}
+                          className="bg-purple-600 hover:bg-purple-700 text-white px-3 py-1.5 rounded-lg font-medium shadow-sm hover:shadow-md transition-all text-sm"
+                        >
+                          Mark Vaccinated
+                        </button>
+                        <button 
+                          onClick={() => updateStatus(a._id, "rejected")}
+                          className="bg-red-600 hover:bg-red-700 text-white px-3 py-1.5 rounded-lg font-medium shadow-sm hover:shadow-md transition-all text-sm"
+                        >
+                          Reject
+                        </button>
+                      </div>
+                    )}
+                    {a.status === "vaccinated" && (
+                      <div className="flex gap-2">
+                        <button 
+                          onClick={() => updateStatus(a._id, "completed")}
+                          className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1.5 rounded-lg font-medium shadow-sm hover:shadow-md transition-all text-sm"
+                        >
+                          Complete Process
+                        </button>
+                      </div>
+                    )}
+                    {(a.status === "rejected" || a.status === "completed") && (
                       <span className="text-gray-400 text-sm">No action</span>
                     )}
                   </td>
@@ -78,6 +105,18 @@ const AppointmentManager = () => {
             </tbody>
           </table>
         </div>
+      </div>
+      
+      {/* Status Explanation */}
+      <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
+        <h4 className="font-medium text-gray-800 mb-2">Status Workflow Guide</h4>
+        <ul className="list-disc pl-5 space-y-1 text-gray-600 text-sm">
+          <li><span className="font-medium">Pending</span> - Appointment requested by user</li>
+          <li><span className="font-medium">Approved</span> - Admin has approved the appointment</li>
+          <li><span className="font-medium">Vaccinated</span> - User has received the vaccine (admin action)</li>
+          <li><span className="font-medium">Completed</span> - Process finalized, certificate available</li>
+          <li><span className="font-medium">Rejected</span> - Appointment cancelled/rejected</li>
+        </ul>
       </div>
     </div>
   );
