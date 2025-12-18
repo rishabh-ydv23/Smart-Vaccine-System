@@ -16,9 +16,9 @@ const CertificateGenerator = () => {
     const fetchAppointments = async () => {
       try {
         const { data } = await api.get("/appointments/my");
-        // Filter only completed appointments
-        const completedAppointments = data.filter(app => app.status === 'completed');
-        setAppointments(completedAppointments);
+        // Filter only vaccinated or completed appointments
+        const eligibleAppointments = data.filter(app => app.status === 'vaccinated' || app.status === 'completed');
+        setAppointments(eligibleAppointments);
       } catch (err) {
         console.log(err);
       } finally {
@@ -97,31 +97,32 @@ const CertificateGenerator = () => {
           <div className="space-y-6">
             {appointments.length === 0 ? (
               <div className="bg-yellow-50 border-l-4 border-yellow-400 p-4 rounded">
-                <p className="text-yellow-800 font-medium">⚠️ No completed vaccinations found</p>
+                <p className="text-yellow-800 font-medium">⚠️ No eligible vaccinations found</p>
                 <p className="text-yellow-700 text-sm mt-1">
-                  Certificates can only be generated for completed vaccinations. Please contact an administrator if you believe this is an error.
+                  Certificates can only be generated for vaccinations with "VACCINATED" or "COMPLETED" status. 
+                  Please contact an administrator if you believe this is an error.
                 </p>
               </div>
             ) : (
               <>
                 <div className="bg-blue-50 border-l-4 border-blue-500 p-4 rounded">
-                  <p className="text-blue-800 font-medium">📋 Select a completed vaccination to generate your certificate</p>
-                  <p className="text-blue-700 text-sm mt-1">Only vaccinations with "COMPLETED" status are eligible for certification</p>
+                  <p className="text-blue-800 font-medium">📋 Select a vaccinated appointment to generate your certificate</p>
+                  <p className="text-blue-700 text-sm mt-1">Only vaccinations with "VACCINATED" or "COMPLETED" status are eligible for certification</p>
                 </div>
                 
                 <form onSubmit={handleGenerateCertificate} className="space-y-6">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Select Completed Vaccination</label>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Select Vaccinated Appointment</label>
                     <select
                       value={selectedAppointment}
                       onChange={handleAppointmentChange}
                       className="w-full border border-gray-300 px-4 py-2.5 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                       required
                     >
-                      <option value="">Choose a completed vaccination</option>
+                      <option value="">Choose a vaccinated appointment</option>
                       {appointments.map(appointment => (
                         <option key={appointment._id} value={appointment._id}>
-                          {appointment.vaccineId?.name || 'N/A'} - {new Date(appointment.date).toLocaleDateString()}
+                          {appointment.vaccineId?.name || 'N/A'} - {new Date(appointment.date).toLocaleDateString()} ({appointment.status})
                         </option>
                       ))}
                     </select>
@@ -234,7 +235,7 @@ const CertificateGenerator = () => {
         <div className="mt-8 bg-yellow-50 border-l-4 border-yellow-400 p-4 rounded">
           <h4 className="font-semibold text-yellow-800 mb-2">Certificate Information</h4>
           <ul className="list-disc pl-5 space-y-1 text-yellow-700 text-sm">
-            <li>Certificates can only be generated for vaccinations with "COMPLETED" status</li>
+            <li>Certificates can only be generated for vaccinations with "VACCINATED" or "COMPLETED" status</li>
             <li>Each certificate is assigned a unique ID for verification purposes</li>
             <li>Certificates are digitally signed and tamper-proof</li>
             <li>You can download and print your certificate for official use</li>

@@ -1,12 +1,11 @@
 import { useAuth } from "../context/AuthContext";
 import { useNavigate } from "react-router-dom";
 import VaccineManager from "../components/admin/VaccineManager";
-import MedicineManager from "../components/admin/MedicineManager";
 import AppointmentManager from "../components/admin/AppointmentManager";
 import Analytics from "../components/admin/Analytics";
 import { useState } from "react";
 import React from "react";
-import { FiLogOut, FiUser, FiActivity, FiPackage, FiCalendar, FiHome, FiMenu, FiX, FiShield, FiBarChart2 } from "react-icons/fi";
+import { FiLogOut, FiUser, FiActivity, FiCalendar, FiHome, FiMenu, FiX, FiShield, FiBarChart2 } from "react-icons/fi";
 
 const AdminDashboard = () => {
   const { user, logout } = useAuth();
@@ -118,20 +117,6 @@ const AdminDashboard = () => {
 
           <button
             onClick={() => {
-              setTab('medicines');
-              setSidebarOpen(false);
-            }}
-            className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg font-medium transition-all ${
-              tab === 'medicines'
-                ? 'bg-white text-purple-600 shadow-md'
-                : 'text-white hover:bg-white/10'
-            }`}
-          >
-            <FiPackage /> Manage Medicines
-          </button>
-
-          <button
-            onClick={() => {
               setTab('appointments');
               setSidebarOpen(false);
             }}
@@ -172,14 +157,12 @@ const AdminDashboard = () => {
               {tab === 'home' && '🏠 Admin Dashboard'}
               {tab === 'analytics' && '📊 Analytics Dashboard'}
               {tab === 'vaccines' && '💉 Manage Vaccines'}
-              {tab === 'medicines' && '💊 Manage Medicines'}
               {tab === 'appointments' && '📅 Manage Appointments'}
             </h2>
             <p className="text-white/70 text-xs lg:text-sm mt-1">
               {tab === 'home' && 'Welcome to the admin control panel'}
               {tab === 'analytics' && 'Comprehensive overview of your vaccine management system'}
               {tab === 'vaccines' && 'Add, update, and manage vaccine inventory'}
-              {tab === 'medicines' && 'Add, update, and manage medicine stock'}
               {tab === 'appointments' && 'Approve or reject user appointments'}
             </p>
           </div>
@@ -214,18 +197,6 @@ const AdminDashboard = () => {
                   </div>
                 </div>
               </div>
-
-              <div className="bg-white/90 backdrop-blur-lg rounded-xl p-4 lg:p-6 border border-white/30 shadow-lg hover:shadow-xl transition-all cursor-pointer" onClick={() => setTab('medicines')}>
-                <div className="flex items-center gap-3 lg:gap-4">
-                  <div className="bg-blue-100 p-3 lg:p-4 rounded-full">
-                    <FiPackage className="text-blue-600 text-xl lg:text-2xl" />
-                  </div>
-                  <div>
-                    <h4 className="font-bold text-gray-800 text-base lg:text-lg">Medicines</h4>
-                    <p className="text-gray-600 text-xs lg:text-sm">Manage stock</p>
-                  </div>
-                </div>
-              </div>
             </div>
 
             <section className="bg-white/90 backdrop-blur-lg rounded-2xl shadow-xl p-4 lg:p-6 border border-white/30">
@@ -244,13 +215,6 @@ const AdminDashboard = () => {
                 >
                   <p className="text-sm opacity-90">Add New</p>
                   <p className="text-lg">Vaccine</p>
-                </button>
-                <button
-                  onClick={() => setTab('medicines')}
-                  className="p-4 bg-gradient-to-r from-blue-500 to-indigo-500 hover:from-blue-600 hover:to-indigo-600 text-white rounded-lg font-semibold shadow-md transition-all text-left"
-                >
-                  <p className="text-sm opacity-90">Add New</p>
-                  <p className="text-lg">Medicine</p>
                 </button>
                 <button
                   onClick={() => setTab('appointments')}
@@ -275,13 +239,6 @@ const AdminDashboard = () => {
         {tab === 'vaccines' && (
           <section className="bg-white/90 backdrop-blur-lg rounded-2xl shadow-xl p-4 lg:p-6 border border-white/30">
             <VaccineManager />
-          </section>
-        )}
-
-        {/* Medicines Tab */}
-        {tab === 'medicines' && (
-          <section className="bg-white/90 backdrop-blur-lg rounded-2xl shadow-xl p-4 lg:p-6 border border-white/30">
-            <MedicineManager />
           </section>
         )}
 
