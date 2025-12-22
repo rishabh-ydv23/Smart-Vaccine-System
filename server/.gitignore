@@ -1,3 +1,9 @@
 node_modules/
 env/
 dist/
+.env
+.env.*
+*.log
+.vscode/
+.idea/
+test*.js
