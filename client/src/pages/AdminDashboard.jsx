@@ -3,15 +3,41 @@ import { useNavigate } from "react-router-dom";
 import VaccineManager from "../components/admin/VaccineManager";
 import AppointmentManager from "../components/admin/AppointmentManager";
 import Analytics from "../components/admin/Analytics";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import React from "react";
-import { FiLogOut, FiUser, FiActivity, FiCalendar, FiHome, FiMenu, FiX, FiShield, FiBarChart2 } from "react-icons/fi";
+import { FiLogOut, FiUser, FiActivity, FiCalendar, FiHome, FiMenu, FiX, FiShield, FiBarChart2, FiArrowRight, FiTrendingUp, FiUsers, FiCheckCircle } from "react-icons/fi";
+import { motion } from 'framer-motion';
+import api from '../api/axios';
 
 const AdminDashboard = () => {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
   const [tab, setTab] = useState("home");
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [stats, setStats] = useState({
+    totalUsers: 0,
+    totalAppointments: 0,
+    totalVaccines: 0,
+    pendingAppointments: 0,
+  });
+
+  useEffect(() => {
+    fetchDashboardStats();
+  }, []);
+
+  const fetchDashboardStats = async () => {
+    try {
+      const { data } = await api.get('/appointments/analytics');
+      setStats({
+        totalUsers: data.totalUsers || 0,
+        totalAppointments: data.upcomingAppointments?.length || 0,
+        totalVaccines: data.vaccines?.length || 0,
+        pendingAppointments: data.statusCounts?.find(s => s._id === 'pending')?.count || 0,
+      });
+    } catch (error) {
+      console.error('Failed to fetch dashboard stats:', error);
+    }
+  };
 
   // restrict non-admin access
   if (user?.role !== "admin") {
@@ -149,17 +175,17 @@ const AdminDashboard = () => {
       )}
 
       {/* Main Content */}
-      <main className="flex-1 p-4 lg:p-6 overflow-y-auto">
+      <main className="flex-1 p-4 lg:p-6 overflow-y-auto bg-gray-50">
         {/* Header */}
-        <header className="bg-white/20 backdrop-blur-lg shadow-lg rounded-2xl p-4 lg:p-5 mb-4 lg:mb-6 border border-white/30">
+        <header className="bg-white shadow-lg rounded-2xl p-4 lg:p-5 mb-4 lg:mb-6 border border-gray-200">
           <div>
-            <h2 className="text-2xl lg:text-3xl font-bold text-white">
+            <h2 className="text-2xl lg:text-3xl font-bold text-gray-900">
               {tab === 'home' && '🏠 Admin Dashboard'}
               {tab === 'analytics' && '📊 Analytics Dashboard'}
               {tab === 'vaccines' && '💉 Manage Vaccines'}
               {tab === 'appointments' && '📅 Manage Appointments'}
             </h2>
-            <p className="text-white/70 text-xs lg:text-sm mt-1">
+            <p className="text-gray-600 text-xs lg:text-sm mt-1">
               {tab === 'home' && 'Welcome to the admin control panel'}
               {tab === 'analytics' && 'Comprehensive overview of your vaccine management system'}
               {tab === 'vaccines' && 'Add, update, and manage vaccine inventory'}
@@ -172,79 +198,218 @@ const AdminDashboard = () => {
 
         {/* Home Tab */}
         {tab === 'home' && (
-          <>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-3 lg:gap-4 mb-4 lg:mb-6">
-              <div className="bg-white/90 backdrop-blur-lg rounded-xl p-4 lg:p-6 border border-white/30 shadow-lg hover:shadow-xl transition-all cursor-pointer" onClick={() => setTab('analytics')}>
-                <div className="flex items-center gap-3 lg:gap-4">
-                  <div className="bg-purple-100 p-3 lg:p-4 rounded-full">
-                    <FiBarChart2 className="text-purple-600 text-xl lg:text-2xl" />
-                  </div>
-                  <div>
-                    <h4 className="font-bold text-gray-800 text-base lg:text-lg">Analytics</h4>
-                    <p className="text-gray-600 text-xs lg:text-sm">View reports</p>
-                  </div>
-                </div>
-              </div>
-
-              <div className="bg-white/90 backdrop-blur-lg rounded-xl p-4 lg:p-6 border border-white/30 shadow-lg hover:shadow-xl transition-all cursor-pointer" onClick={() => setTab('vaccines')}>
-                <div className="flex items-center gap-3 lg:gap-4">
-                  <div className="bg-green-100 p-3 lg:p-4 rounded-full">
-                    <FiActivity className="text-green-600 text-xl lg:text-2xl" />
-                  </div>
-                  <div>
-                    <h4 className="font-bold text-gray-800 text-base lg:text-lg">Vaccines</h4>
-                    <p className="text-gray-600 text-xs lg:text-sm">Manage inventory</p>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <section className="bg-white/90 backdrop-blur-lg rounded-2xl shadow-xl p-4 lg:p-6 border border-white/30">
-              <h3 className="text-lg lg:text-xl font-bold text-gray-800 mb-3 lg:mb-4">Quick Actions</h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-3 lg:gap-4">
-                <button
-                  onClick={() => setTab('analytics')}
-                  className="p-4 bg-gradient-to-r from-purple-500 to-indigo-500 hover:from-purple-600 hover:to-indigo-600 text-white rounded-lg font-semibold shadow-md transition-all text-left"
+          <div className="space-y-6">
+            {/* Hero Section */}
+            <section className="bg-gradient-to-r from-purple-500 to-indigo-600 text-white py-16 rounded-2xl">
+              <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+                <motion.div
+                  initial={{ opacity: 0, y: 30 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.8 }}
+                  className="text-center"
                 >
-                  <p className="text-sm opacity-90">View</p>
-                  <p className="text-lg">Analytics Report</p>
-                </button>
-                <button
-                  onClick={() => setTab('vaccines')}
-                  className="p-4 bg-gradient-to-r from-green-500 to-teal-500 hover:from-green-600 hover:to-teal-600 text-white rounded-lg font-semibold shadow-md transition-all text-left"
-                >
-                  <p className="text-sm opacity-90">Add New</p>
-                  <p className="text-lg">Vaccine</p>
-                </button>
-                <button
-                  onClick={() => setTab('appointments')}
-                  className="p-4 bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white rounded-lg font-semibold shadow-md transition-all text-left"
-                >
-                  <p className="text-sm opacity-90">Review</p>
-                  <p className="text-lg">Appointments</p>
-                </button>
+                  <h1 className="text-4xl md:text-5xl font-bold mb-6">
+                    Admin Control Center
+                  </h1>
+                  <p className="text-xl md:text-2xl text-purple-100 mb-8 max-w-3xl mx-auto">
+                    Manage your vaccine system efficiently with comprehensive tools for analytics, inventory, and appointments.
+                  </p>
+                  <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                    <button
+                      onClick={() => setTab('analytics')}
+                      className="inline-flex items-center justify-center px-8 py-4 bg-white text-purple-600 font-semibold rounded-lg hover:bg-gray-50 transition-colors shadow-lg"
+                    >
+                      View Analytics
+                      <FiArrowRight className="ml-2 w-5 h-5" />
+                    </button>
+                    <button
+                      onClick={() => setTab('vaccines')}
+                      className="inline-flex items-center justify-center px-8 py-4 bg-purple-600 text-white font-semibold rounded-lg hover:bg-purple-700 transition-colors border-2 border-white"
+                    >
+                      Manage Vaccines
+                      <FiArrowRight className="ml-2 w-5 h-5" />
+                    </button>
+                  </div>
+                </motion.div>
               </div>
             </section>
-          </>
+
+            {/* Info Cards Section */}
+            <section className="py-8">
+              <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+                <motion.div
+                  initial={{ opacity: 0, y: 30 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.8, delay: 0.2 }}
+                  className="text-center mb-12"
+                >
+                  <h2 className="text-3xl font-bold text-gray-900 mb-4">System Overview</h2>
+                  <p className="text-gray-600 max-w-2xl mx-auto">
+                    Monitor key metrics and manage your vaccination platform effectively
+                  </p>
+                </motion.div>
+
+                <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
+                  <motion.div
+                    initial={{ opacity: 0, y: 30 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.8, delay: 0.1 }}
+                    className="bg-white rounded-xl shadow-lg border p-6 hover:shadow-xl transition-shadow border-purple-200"
+                  >
+                    <div className="flex items-center mb-4">
+                      <div className="p-3 rounded-lg text-purple-600 bg-purple-50">
+                        <FiUsers className="w-6 h-6" />
+                      </div>
+                      <h3 className="text-lg font-semibold text-gray-900 ml-4">Total Users</h3>
+                    </div>
+                    <div className="text-gray-700">
+                      <p className="text-2xl font-bold text-gray-900">{stats.totalUsers}</p>
+                      <p className="text-sm text-gray-600">Registered users</p>
+                    </div>
+                  </motion.div>
+
+                  <motion.div
+                    initial={{ opacity: 0, y: 30 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.8, delay: 0.2 }}
+                    className="bg-white rounded-xl shadow-lg border p-6 hover:shadow-xl transition-shadow border-blue-200"
+                  >
+                    <div className="flex items-center mb-4">
+                      <div className="p-3 rounded-lg text-blue-600 bg-blue-50">
+                        <FiCalendar className="w-6 h-6" />
+                      </div>
+                      <h3 className="text-lg font-semibold text-gray-900 ml-4">Total Appointments</h3>
+                    </div>
+                    <div className="text-gray-700">
+                      <p className="text-2xl font-bold text-gray-900">{stats.totalAppointments}</p>
+                      <p className="text-sm text-gray-600">Scheduled appointments</p>
+                    </div>
+                  </motion.div>
+
+                  <motion.div
+                    initial={{ opacity: 0, y: 30 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.8, delay: 0.3 }}
+                    className="bg-white rounded-xl shadow-lg border p-6 hover:shadow-xl transition-shadow border-green-200"
+                  >
+                    <div className="flex items-center mb-4">
+                      <div className="p-3 rounded-lg text-green-600 bg-green-50">
+                        <FiActivity className="w-6 h-6" />
+                      </div>
+                      <h3 className="text-lg font-semibold text-gray-900 ml-4">Available Vaccines</h3>
+                    </div>
+                    <div className="text-gray-700">
+                      <p className="text-2xl font-bold text-gray-900">{stats.totalVaccines}</p>
+                      <p className="text-sm text-gray-600">Vaccine types</p>
+                    </div>
+                  </motion.div>
+
+                  <motion.div
+                    initial={{ opacity: 0, y: 30 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.8, delay: 0.4 }}
+                    className="bg-white rounded-xl shadow-lg border p-6 hover:shadow-xl transition-shadow border-orange-200"
+                  >
+                    <div className="flex items-center mb-4">
+                      <div className="p-3 rounded-lg text-orange-600 bg-orange-50">
+                        <FiCheckCircle className="w-6 h-6" />
+                      </div>
+                      <h3 className="text-lg font-semibold text-gray-900 ml-4">Pending Reviews</h3>
+                    </div>
+                    <div className="text-gray-700">
+                      <p className="text-2xl font-bold text-gray-900">{stats.pendingAppointments}</p>
+                      <p className="text-sm text-gray-600">Awaiting approval</p>
+                    </div>
+                  </motion.div>
+                </div>
+              </div>
+            </section>
+
+            {/* Quick Actions Section */}
+            <section className="py-8">
+              <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+                <motion.div
+                  initial={{ opacity: 0, y: 30 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.8, delay: 0.3 }}
+                  className="text-center mb-12"
+                >
+                  <h2 className="text-3xl font-bold text-gray-900 mb-4">Quick Actions</h2>
+                  <p className="text-gray-600">Access management tools with just one click</p>
+                </motion.div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                  <button
+                    onClick={() => setTab('analytics')}
+                    className="group bg-gradient-to-br from-purple-50 to-purple-100 p-6 rounded-xl hover:shadow-lg transition-all duration-300 border border-purple-200"
+                  >
+                    <div className="text-center">
+                      <div className="w-12 h-12 bg-purple-500 rounded-lg flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform">
+                        <FiBarChart2 className="w-6 h-6 text-white" />
+                      </div>
+                      <h3 className="font-semibold text-gray-900 mb-2">Analytics</h3>
+                      <p className="text-sm text-gray-600">View detailed reports</p>
+                    </div>
+                  </button>
+
+                  <button
+                    onClick={() => setTab('vaccines')}
+                    className="group bg-gradient-to-br from-green-50 to-green-100 p-6 rounded-xl hover:shadow-lg transition-all duration-300 border border-green-200"
+                  >
+                    <div className="text-center">
+                      <div className="w-12 h-12 bg-green-500 rounded-lg flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform">
+                        <FiActivity className="w-6 h-6 text-white" />
+                      </div>
+                      <h3 className="font-semibold text-gray-900 mb-2">Manage Vaccines</h3>
+                      <p className="text-sm text-gray-600">Add and update inventory</p>
+                    </div>
+                  </button>
+
+                  <button
+                    onClick={() => setTab('appointments')}
+                    className="group bg-gradient-to-br from-blue-50 to-blue-100 p-6 rounded-xl hover:shadow-lg transition-all duration-300 border border-blue-200"
+                  >
+                    <div className="text-center">
+                      <div className="w-12 h-12 bg-blue-500 rounded-lg flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform">
+                        <FiCalendar className="w-6 h-6 text-white" />
+                      </div>
+                      <h3 className="font-semibold text-gray-900 mb-2">Appointments</h3>
+                      <p className="text-sm text-gray-600">Review and approve</p>
+                    </div>
+                  </button>
+
+                  <div className="group bg-gradient-to-br from-orange-50 to-orange-100 p-6 rounded-xl hover:shadow-lg transition-all duration-300 border border-orange-200">
+                    <div className="text-center">
+                      <div className="w-12 h-12 bg-orange-500 rounded-lg flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform">
+                        <FiTrendingUp className="w-6 h-6 text-white" />
+                      </div>
+                      <h3 className="font-semibold text-gray-900 mb-2">System Health</h3>
+                      <p className="text-sm text-gray-600">Monitor performance</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </section>
+          </div>
         )}
 
         {/* Analytics Tab */}
         {tab === 'analytics' && (
-          <section className="bg-white/90 backdrop-blur-lg rounded-2xl shadow-xl p-4 lg:p-6 border border-white/30">
+          <section className="bg-white rounded-2xl shadow-xl p-4 lg:p-6 border border-gray-200">
             <Analytics />
           </section>
         )}
 
         {/* Vaccines Tab */}
         {tab === 'vaccines' && (
-          <section className="bg-white/90 backdrop-blur-lg rounded-2xl shadow-xl p-4 lg:p-6 border border-white/30">
+          <section className="bg-white rounded-2xl shadow-xl p-4 lg:p-6 border border-gray-200">
             <VaccineManager />
           </section>
         )}
 
         {/* Appointments Tab */}
         {tab === 'appointments' && (
-          <section className="bg-white/90 backdrop-blur-lg rounded-2xl shadow-xl p-4 lg:p-6 border border-white/30">
+          <section className="bg-white rounded-2xl shadow-xl p-4 lg:p-6 border border-gray-200">
             <AppointmentManager />
           </section>
         )}
