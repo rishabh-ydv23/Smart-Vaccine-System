@@ -30,18 +30,37 @@ const Login = () => {
     });
     
     try {
-      const { data } = await api.post("/auth/login", form);
-      console.log("📥 Received login response:", {
-        userId: data.user?._id,
-        email: data.user?.email,
-        role: data.user?.role,
-        hasToken: !!data.token
-      });
+      const response = await api.post("/auth/login", form);
+      console.log("📥 Received login response:", response.data);
       
-      login(data);
+      // Check if response has the expected structure
+      if (!response.data || !response.data.user) {
+        throw new Error("Invalid response structure from server");
+      }
+      
+      const { user, token } = response.data;
+      
+      // Validate user object
+      if (!user._id || !user.email) {
+        throw new Error("User data is incomplete");
+      }
+      
+      // Create user object with proper structure for AuthContext
+      const userData = {
+        _id: user._id,
+        name: user.name,
+        email: user.email,
+        role: user.role || 'user', // Default to 'user' if no role
+        token: token
+      };
+      
+      console.log("👤 Processed user data:", userData);
+      
+      // Login with properly structured data
+      login(userData);
       
       // Redirect based on user role
-      if (data.user.role === 'admin') {
+      if (userData.role === 'admin') {
         console.log("➡️ Redirecting to admin dashboard");
         navigate("/admin");
       } else {
@@ -61,6 +80,8 @@ const Login = () => {
         setError("Login endpoint not found. Please check the API URL.");
       } else if (err.code === 'ERR_NETWORK') {
         setError("Network error. Please check your connection.");
+      } else if (err.message.includes('Invalid response structure')) {
+        setError("Server response format error. Please contact support.");
       } else {
         setError(`Login failed: ${err.response?.data?.message || err.message || "Unknown error"}`);
       }
