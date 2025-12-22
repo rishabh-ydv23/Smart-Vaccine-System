@@ -6,7 +6,44 @@ const AppointmentManager = () => {
 
   const fetchAppointments = async () => {
     const { data } = await api.get("/appointments");
-    setAppointments(data);
+    
+    // Define the specific appointments to remove
+    const appointmentsToRemove = [
+      // Dev thakral - 12/19/2025, 5:53:00 PM - approved
+      { user: "Dev thakral", date: "2025-12-19T17:53:00", status: "approved" },
+      // Rishabh - 12/17/2025, 8:47:00 PM - approved
+      { user: "Rishabh", date: "2025-12-17T20:47:00", status: "approved" },
+      // Rishabh - 12/16/2025, 4:37:00 PM - vaccinated
+      { user: "Rishabh", date: "2025-12-16T16:37:00", status: "vaccinated" },
+      // Shahrukh Khan - 12/11/2025, 9:53:00 PM - rejected
+      { user: "Shahrukh Khan", date: "2025-12-11T21:53:00", status: "rejected" },
+      // Shahrukh Khan - 12/11/2025, 8:29:00 PM - approved
+      { user: "Shahrukh Khan", date: "2025-12-11T20:29:00", status: "approved" },
+      // N/A - 12/11/2025, 7:57:00 PM - approved
+      { user: null, date: "2025-12-11T19:57:00", status: "approved" },
+      // Additional Rishabh appointments - 12/11/2025, 10:05:00 AM - approved
+      { user: "Rishabh", date: "2025-12-11T10:05:00", status: "approved" }
+    ];
+    
+    // Filter out the specified appointments
+    const filteredAppointments = data.filter(appointment => {
+      // Check if this appointment matches any of the ones to remove
+      const shouldRemove = appointmentsToRemove.some(remove => {
+        const userName = appointment.userId?.name || null;
+        const appointmentDate = new Date(appointment.date).getTime();
+        const removeDate = new Date(remove.date).getTime();
+        const userMatch = remove.user === null ? userName === null : userName === remove.user;
+        
+        return userMatch && 
+               appointmentDate === removeDate && 
+               appointment.status === remove.status;
+      });
+      
+      // Return true to keep the appointment, false to remove it
+      return !shouldRemove;
+    });
+    
+    setAppointments(filteredAppointments);
   };
 
   useEffect(() => {
@@ -117,6 +154,9 @@ const AppointmentManager = () => {
           <li><span className="font-medium">Completed</span> - Process finalized, certificate available</li>
           <li><span className="font-medium">Rejected</span> - Appointment cancelled/rejected</li>
         </ul>
+        <div className="mt-3 p-3 bg-yellow-50 border border-yellow-200 rounded text-yellow-800 text-sm">
+          <p>Note: Specific appointments have been filtered out of this view as requested.</p>
+        </div>
       </div>
     </div>
   );
