@@ -30,18 +30,30 @@ const checkDbConnection = (req, res, next) => {
 router.post('/register', checkDbConnection, async (req, res) => {
   try {
     const { name, email, password, governmentId, role } = req.body;
-    console.log('Registration attempt for email:', email);
+    console.log('📥 Registration attempt for email:', email);
+
+    // Validate required fields
+    if (!name || !email || !password || !governmentId) {
+      return res.status(400).json({ 
+        message: 'All fields are required',
+        required: ['name', 'email', 'password', 'governmentId']
+      });
+    }
 
     // Check if user with email already exists
     const emailExists = await User.findOne({ email });
-    if (emailExists) return res.status(400).json({ message: 'User with this email already exists' });
+    if (emailExists) {
+      return res.status(400).json({ message: 'User with this email already exists' });
+    }
     
     // Check if user with government ID already exists
     const govIdExists = await User.findOne({ governmentId });
-    if (govIdExists) return res.status(400).json({ message: 'User with this government ID already exists' });
+    if (govIdExists) {
+      return res.status(400).json({ message: 'User with this government ID already exists' });
+    }
 
     const user = await User.create({ name, email, password, governmentId, role: role || 'user' });
-    console.log('User created successfully:', email);
+    console.log('✅ User created successfully:', email);
 
     res.status(201).json({
       _id: user._id,
@@ -52,10 +64,13 @@ router.post('/register', checkDbConnection, async (req, res) => {
       token: generateToken(user._id, user.role)
     });
   } catch (err) {
-    console.error('Registration error:', err);
+    console.error('❌ Registration error:', err);
     if (err.code === 11000) {
       // Duplicate key error
       return res.status(400).json({ message: 'User with this email or government ID already exists' });
+    }
+    if (err.name === 'ValidationError') {
+      return res.status(400).json({ message: 'Validation error', details: err.message });
     }
     res.status(500).json({ 
       message: 'Server error during registration',
@@ -68,31 +83,46 @@ router.post('/register', checkDbConnection, async (req, res) => {
 router.post('/login', checkDbConnection, async (req, res) => {
   try {
     const { email, password } = req.body;
-    console.log('Login attempt for email:', email);
+    console.log('📥 Login attempt for email:', email);
+
+    // Validate required fields
+    if (!email || !password) {
+      return res.status(400).json({ 
+        message: 'Email and password are required',
+        required: ['email', 'password']
+      });
+    }
 
     const user = await User.findOne({ email });
     if (!user) {
-      console.log('User not found:', email);
+      console.log('❌ User not found:', email);
       return res.status(401).json({ message: 'Invalid email or password' });
     }
 
+    console.log('✅ User found:', user.email, '- Role:', user.role);
+    
     const isMatch = await user.matchPassword(password);
-    console.log('Password match result:', isMatch);
+    console.log('🔑 Password match result:', isMatch);
     
     if (!isMatch) {
-      console.log('Password does not match for user:', email);
+      console.log('❌ Password does not match for user:', email);
       return res.status(401).json({ message: 'Invalid email or password' });
     }
 
+    const token = generateToken(user._id, user.role);
+    console.log('🎉 Token generated for user:', user.email);
+
     res.json({
-      _id: user._id,
-      name: user.name,
-      email: user.email,
-      role: user.role,
-      token: generateToken(user._id, user.role)
+      user: {
+        _id: user._id,
+        name: user.name,
+        email: user.email,
+        role: user.role
+      },
+      token: token
     });
   } catch (err) {
-    console.error('Login error:', err);
+    console.error('❌ Login error:', err);
     res.status(500).json({ 
       message: 'Server error during login',
       suggestion: 'Please try again later'

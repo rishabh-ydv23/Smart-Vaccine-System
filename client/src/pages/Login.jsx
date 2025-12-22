@@ -22,19 +22,17 @@ const Login = () => {
     setLoading(true);
     setError("");
     
-    // Log what we're sending
-    console.log("📤 Sending login request with:", {
-      email: form.email,
-      password: form.password ? "***" : "empty",
-      isAdminLogin: isAdminLogin
-    });
-    
     try {
+      console.log("📤 Sending login request with:", {
+        email: form.email,
+        password: form.password ? "***" : "empty"
+      });
+      
       const response = await api.post("/auth/login", form);
       console.log("📥 Received login response:", response.data);
       
       // Check if response has the expected structure
-      if (!response.data || !response.data.user) {
+      if (!response.data || !response.data.user || !response.data.token) {
         throw new Error("Invalid response structure from server");
       }
       
@@ -48,7 +46,7 @@ const Login = () => {
       // Create user object with proper structure for AuthContext
       const userData = {
         _id: user._id,
-        name: user.name,
+        name: user.name || '',
         email: user.email,
         role: user.role || 'user', // Default to 'user' if no role
         token: token
@@ -76,6 +74,8 @@ const Login = () => {
         setError("Service temporarily unavailable. Please try again later.");
       } else if (err.response?.status === 401) {
         setError("Invalid email or password. Please check your credentials.");
+      } else if (err.response?.status === 400) {
+        setError(`Bad request: ${err.response.data.message}`);
       } else if (err.response?.status === 404) {
         setError("Login endpoint not found. Please check the API URL.");
       } else if (err.code === 'ERR_NETWORK') {
@@ -90,11 +90,11 @@ const Login = () => {
     }
   };
 
-  // Pre-fill admin credentials for testing
+  // Pre-fill simple admin credentials
   const fillAdminCredentials = () => {
     setForm({
-      email: "rishabhAdmin@gmail.com",
-      password: "CHANGE_ME_ADMIN_PASSWORD"
+      email: "admin@system.com",
+      password: "password123"
     });
     setIsAdminLogin(true);
   };
@@ -143,7 +143,7 @@ const Login = () => {
               onClick={fillAdminCredentials}
               className="text-xs text-yellow-200 hover:text-yellow-300 underline"
             >
-              Fill admin credentials
+              Fill simple admin credentials
             </button>
           </div>
         )}
@@ -170,7 +170,7 @@ const Login = () => {
               <input
                 type="email"
                 name="email"
-                placeholder={isAdminLogin ? "Admin email (rishabhAdmin@gmail.com)" : "Enter your email"}
+                placeholder={isAdminLogin ? "Admin email (admin@system.com)" : "Enter your email"}
                 className="w-full bg-transparent outline-none text-gray-800 text-sm md:text-base"
                 onChange={handleChange}
                 value={form.email}
@@ -192,7 +192,7 @@ const Login = () => {
               <input
                 type="password"
                 name="password"
-                placeholder={isAdminLogin ? "Admin password (CHANGE_ME_ADMIN_PASSWORD)" : "Enter your password"}
+                placeholder={isAdminLogin ? "Admin password (password123)" : "Enter your password"}
                 className="w-full bg-transparent outline-none text-gray-800 text-sm md:text-base"
                 onChange={handleChange}
                 value={form.password}
