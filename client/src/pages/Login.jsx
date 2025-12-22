@@ -22,22 +22,37 @@ const Login = () => {
     setLoading(true);
     setError("");
     
+    // Log what we're sending
+    console.log("📤 Sending login request with:", {
+      email: form.email,
+      password: form.password ? "***" : "empty",
+      isAdminLogin: isAdminLogin
+    });
+    
     try {
-      console.log("Attempting login with:", form);
       const { data } = await api.post("/auth/login", form);
-      console.log("Login response:", data);
+      console.log("📥 Received login response:", {
+        userId: data.user?._id,
+        email: data.user?.email,
+        role: data.user?.role,
+        hasToken: !!data.token
+      });
+      
       login(data);
       
       // Redirect based on user role
       if (data.user.role === 'admin') {
-        console.log("Redirecting to admin dashboard");
+        console.log("➡️ Redirecting to admin dashboard");
         navigate("/admin");
       } else {
-        console.log("Redirecting to user dashboard");
+        console.log("➡️ Redirecting to user dashboard");
         navigate("/");
       }
     } catch (err) {
-      console.error("Login error:", err);
+      console.error("❌ Login error:", err);
+      console.error("📄 Error response:", err.response?.data);
+      console.error("🔢 Error status:", err.response?.status);
+      
       if (err.response?.status === 503) {
         setError("Service temporarily unavailable. Please try again later.");
       } else if (err.response?.status === 401) {
@@ -52,6 +67,15 @@ const Login = () => {
     } finally {
       setLoading(false);
     }
+  };
+
+  // Pre-fill admin credentials for testing
+  const fillAdminCredentials = () => {
+    setForm({
+      email: "rishabhAdmin@gmail.com",
+      password: "CHANGE_ME_ADMIN_PASSWORD"
+    });
+    setIsAdminLogin(true);
   };
 
   return (
@@ -91,6 +115,18 @@ const Login = () => {
           </button>
         </div>
 
+        {/* Admin Credential Helper */}
+        {isAdminLogin && (
+          <div className="mb-4 text-center">
+            <button
+              onClick={fillAdminCredentials}
+              className="text-xs text-yellow-200 hover:text-yellow-300 underline"
+            >
+              Fill admin credentials
+            </button>
+          </div>
+        )}
+
         {/* Error */}
         {error && (
           <div className="bg-red-100/80 border-l-4 border-red-700 text-red-700 p-3 rounded-lg mb-4">
@@ -116,6 +152,7 @@ const Login = () => {
                 placeholder={isAdminLogin ? "Admin email (rishabhAdmin@gmail.com)" : "Enter your email"}
                 className="w-full bg-transparent outline-none text-gray-800 text-sm md:text-base"
                 onChange={handleChange}
+                value={form.email}
                 required
                 disabled={loading}
               />
@@ -137,6 +174,7 @@ const Login = () => {
                 placeholder={isAdminLogin ? "Admin password (CHANGE_ME_ADMIN_PASSWORD)" : "Enter your password"}
                 className="w-full bg-transparent outline-none text-gray-800 text-sm md:text-base"
                 onChange={handleChange}
+                value={form.password}
                 required
                 disabled={loading}
               />
