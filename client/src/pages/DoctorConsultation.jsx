@@ -2,7 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { FiUser, FiStar, FiMessageSquare, FiVideo, FiFilter } from 'react-icons/fi';
 import toast, { Toaster } from 'react-hot-toast';
-
+import api from '../api/axios';
+import { useNavigate } from 'react-router-dom';
 const DoctorConsultation = () => {
   const [doctors, setDoctors] = useState([]);
   const [filteredDoctors, setFilteredDoctors] = useState([]);
@@ -12,7 +13,12 @@ const DoctorConsultation = () => {
     availability: '',
   });
   const [showFilters, setShowFilters] = useState(false);
-
+  const [selectedDoctor, setSelectedDoctor] = useState(null);
+  const [selectedType, setSelectedType] = useState('');
+  const [bookingDate, setBookingDate] = useState(new Date());
+  const [bookingTime, setBookingTime] = useState('09:00');
+  const [showBookingModal, setShowBookingModal] = useState(false);
+  const navigate = useNavigate();
   useEffect(() => {
     fetchDoctors();
   }, []);
@@ -21,12 +27,13 @@ const DoctorConsultation = () => {
     applyFilters();
   }, [doctors, filters]);
 
-  const fetchDoctors = () => {
-    // Mock doctors data
-    const mockDoctors = [
+  const fetchDoctors = async () => {
+    // In a real implementation, this would fetch from an API
+    // For now, we'll use the same doctors but with a slight delay to simulate API call
+    const doctorsData = [
       {
         _id: '1',
-        name: 'Dr. Sarah Johnson',
+        name: 'Dr. Rishabh Yadav',
         specialization: 'General Medicine',
         experience: 8,
         rating: 4.8,
@@ -38,7 +45,7 @@ const DoctorConsultation = () => {
       },
       {
         _id: '2',
-        name: 'Dr. Michael Chen',
+        name: 'Dr. Dipanshu Patidar',
         specialization: 'Pediatrics',
         experience: 12,
         rating: 4.9,
@@ -50,7 +57,7 @@ const DoctorConsultation = () => {
       },
       {
         _id: '3',
-        name: 'Dr. Emily Davis',
+        name: 'Dr. Dev Thakral',
         specialization: 'Cardiology',
         experience: 15,
         rating: 4.7,
@@ -61,7 +68,10 @@ const DoctorConsultation = () => {
         avatar: 'https://via.placeholder.com/100',
       },
     ];
-    setDoctors(mockDoctors);
+    
+    // Simulate API delay
+    await new Promise(resolve => setTimeout(resolve, 500));
+    setDoctors(doctorsData);
   };
 
   const applyFilters = () => {
@@ -85,10 +95,32 @@ const DoctorConsultation = () => {
   };
 
   const handleBookConsultation = (doctor, type) => {
-    toast.success(`Booking ${type} consultation with ${doctor.name}`);
-    // In real app, navigate to booking page or open modal
+    setSelectedDoctor(doctor);
+    setSelectedType(type);
+    setShowBookingModal(true);
   };
 
+  const handleConfirmBooking = async () => {
+    try {
+      const bookingData = {
+        doctorName: selectedDoctor.name,
+        specialization: selectedDoctor.specialization,
+        consultationType: selectedType,
+        date: bookingDate,
+        time: bookingTime,
+        price: selectedDoctor.price[selectedType.toLowerCase()]
+      };
+
+      const response = await api.post('/doctor-consultations', bookingData);
+      toast.success('Consultation booked successfully!');
+      setShowBookingModal(false);
+      // Reset form
+      setSelectedDoctor(null);
+      setSelectedType('');
+    } catch (error) {
+      toast.error(error.response?.data?.message || 'Failed to book consultation');
+    }
+  };
   const specializations = [...new Set(doctors.map(d => d.specialization))];
   const consultationTypes = ['Chat', 'Video'];
   const availabilities = ['Available', 'Limited'];
@@ -245,6 +277,74 @@ const DoctorConsultation = () => {
             <FiUser className="w-12 h-12 text-gray-400 mx-auto mb-4" />
             <h3 className="text-lg font-medium text-gray-900 mb-2">No doctors found</h3>
             <p className="text-gray-600">Try adjusting your filters to find more doctors.</p>
+          </div>
+        )}
+
+        {/* Booking Modal */}
+        {showBookingModal && selectedDoctor && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+            <div className="bg-white rounded-lg max-w-md w-full p-6">
+              <h3 className="text-xl font-bold text-gray-900 mb-4">Book Consultation</h3>
+              
+              <div className="mb-4">
+                <p className="text-gray-600">Doctor: <span className="font-semibold">{selectedDoctor.name}</span></p>
+                <p className="text-gray-600">Specialization: <span className="font-semibold">{selectedDoctor.specialization}</span></p>
+                <p className="text-gray-600">Consultation Type: <span className="font-semibold">{selectedType}</span></p>
+                <p className="text-gray-600">Price: <span className="font-semibold">₹{selectedDoctor.price[selectedType.toLowerCase()]}</span></p>
+              </div>
+
+              <div className="mb-4">
+                <label className="block text-sm font-medium text-gray-700 mb-2">Date</label>
+                <input
+                  type="date"
+                  value={bookingDate.toISOString().split('T')[0]}
+                  onChange={(e) => setBookingDate(new Date(e.target.value))}
+                  className="w-full p-2 border border-gray-300 rounded-lg"
+                  min={new Date().toISOString().split('T')[0]}
+                />
+              </div>
+
+              <div className="mb-6">
+                <label className="block text-sm font-medium text-gray-700 mb-2">Time</label>
+                <select
+                  value={bookingTime}
+                  onChange={(e) => setBookingTime(e.target.value)}
+                  className="w-full p-2 border border-gray-300 rounded-lg"
+                >
+                  {/* Generate time slots from 9:00 AM to 5:30 PM */}
+                  {Array.from({ length: 17 }, (_, i) => {
+                    if (i < 9) return null;
+                    return (
+                      <React.Fragment key={i}>
+                        <option value={`${i.toString().padStart(2, '0')}:00`}>
+                          {i.toString().padStart(2, '0')}:00
+                        </option>
+                        {i < 17 && (
+                          <option value={`${i.toString().padStart(2, '0')}:30`}>
+                            {i.toString().padStart(2, '0')}:30
+                          </option>
+                        )}
+                      </React.Fragment>
+                    );
+                  })}
+                </select>
+              </div>
+
+              <div className="flex space-x-3">
+                <button
+                  onClick={() => setShowBookingModal(false)}
+                  className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleConfirmBooking}
+                  className="flex-1 px-4 py-2 bg-teal-500 text-white rounded-lg hover:bg-teal-600"
+                >
+                  Confirm Booking
+                </button>
+              </div>
+            </div>
           </div>
         )}
       </div>

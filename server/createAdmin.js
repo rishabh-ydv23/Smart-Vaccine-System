@@ -22,9 +22,9 @@ const createAdmin = async () => {
       name: 'Admin',
       email: 'admin@vaccine.com',
       password: 'admin123',
+      governmentId: 'ADMIN001',
       role: 'admin'
     });
-
     console.log('✅ Admin user created successfully!');
     console.log('📧 Email: admin@vaccine.com');
     console.log('🔑 Password: admin123');

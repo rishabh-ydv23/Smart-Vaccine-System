@@ -7,6 +7,7 @@ const authRoutes = require("./routes/authRoutes");
 const vaccineRoutes = require("./routes/vaccineRoutes");
 const medicineRoutes = require("./routes/medicineRoutes");
 const appointmentRoutes = require("./routes/appointmentRoutes");
+const doctorConsultationRoutes = require("./routes/doctorConsultationRoutes");
 const { startReminderJob } = require("./jobs/reminderJob");
 
 const app = express();
@@ -69,6 +70,7 @@ app.use("/api/auth", authRoutes);
 app.use("/api/vaccines", vaccineRoutes);
 app.use("/api/medicines", medicineRoutes);
 app.use("/api/appointments", appointmentRoutes);
+app.use("/api/doctor-consultations", doctorConsultationRoutes);
 
 // test route
 app.get("/", (req, res) => {
