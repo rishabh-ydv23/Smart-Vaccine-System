@@ -3,12 +3,13 @@ import api from "../api/axios";
 import { useAuth } from "../context/AuthContext";
 import { useNavigate } from "react-router-dom";
 import React from "react";
-import { FiMail, FiLock } from "react-icons/fi";
+import { FiMail, FiLock, FiShield } from "react-icons/fi";
 
 const Login = () => {
   const { login } = useAuth();
   const navigate = useNavigate();
   const [form, setForm] = useState({ email: "", password: "" });
+  const [isAdminLogin, setIsAdminLogin] = useState(false);
   const [error, setError] = useState("");
 
   const handleChange = (e) => {
@@ -20,8 +21,12 @@ const Login = () => {
     try {
       const { data } = await api.post("/auth/login", form);
       login(data);
-      // Redirect based on user role
-      if (data.user.role === 'admin') {
+      
+      // Redirect based on user role or admin preference
+      if (isAdminLogin && data.user.role === 'admin') {
+        navigate("/admin");
+      } else if (data.user.role === 'admin') {
+        // If admin logs in as regular user, redirect to admin anyway
         navigate("/admin");
       } else {
         navigate("/");
@@ -54,7 +59,24 @@ const Login = () => {
             bg-gradient-to-r from-white to-blue-200 bg-clip-text text-transparent">
             Vaccine Portal
           </h2>
-          <p className="text-white/90 mt-2 text-xs md:text-sm">Sign in to continue</p>
+          <p className="text-white/90 mt-2 text-xs md:text-sm">
+            {isAdminLogin ? "Admin Login" : "User Login"}
+          </p>
+        </div>
+
+        {/* Toggle Admin/User Login */}
+        <div className="flex justify-center mb-4">
+          <button
+            onClick={() => setIsAdminLogin(!isAdminLogin)}
+            className={`flex items-center px-4 py-2 rounded-full text-sm font-medium transition-all ${
+              isAdminLogin 
+                ? 'bg-purple-600 text-white shadow-lg' 
+                : 'bg-white/30 text-white hover:bg-white/40'
+            }`}
+          >
+            <FiShield className="mr-2" />
+            {isAdminLogin ? "Admin Mode" : "Switch to Admin"}
+          </button>
         </div>
 
         {/* Error */}
@@ -79,7 +101,7 @@ const Login = () => {
               <input
                 type="email"
                 name="email"
-                placeholder="Enter your email"
+                placeholder={isAdminLogin ? "Admin email" : "Enter your email"}
                 className="w-full bg-transparent outline-none text-gray-800 text-sm md:text-base"
                 onChange={handleChange}
                 required
@@ -99,7 +121,7 @@ const Login = () => {
               <input
                 type="password"
                 name="password"
-                placeholder="Enter your password"
+                placeholder={isAdminLogin ? "Admin password" : "Enter your password"}
                 className="w-full bg-transparent outline-none text-gray-800 text-sm md:text-base"
                 onChange={handleChange}
                 required
@@ -116,7 +138,7 @@ const Login = () => {
             text-white font-semibold shadow-lg text-sm md:text-base
             transform transition duration-300 hover:scale-[1.03]"
           >
-            Sign In
+            {isAdminLogin ? "Admin Sign In" : "Sign In"}
           </button>
         </form>
 
