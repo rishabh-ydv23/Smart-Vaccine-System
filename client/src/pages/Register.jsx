@@ -2,12 +2,13 @@ import { useState } from "react";
 import api from "../api/axios";
 import { useNavigate } from "react-router-dom";
 import React from "react";
-import { FiUser, FiMail, FiLock, FiCreditCard } from "react-icons/fi";
+import { FiUser, FiMail, FiLock, FiCreditCard, FiArrowLeft } from "react-icons/fi";
 
 const Register = () => {
   const navigate = useNavigate();
   const [form, setForm] = useState({ name: "", email: "", password: "", governmentId: "" });
   const [alert, setAlert] = useState("");
+  const [loading, setLoading] = useState(false);
 
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
@@ -15,10 +16,11 @@ const Register = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setLoading(true);
     try {
       await api.post("/auth/register", form);
       setAlert("Account Created Successfully!");
-      setTimeout(() => navigate("/login"), 1200);
+      setTimeout(() => navigate("/login"), 1500);
     } catch (err) {
       let errorMsg = "Something went wrong";
       if (err.response?.status === 503) {
@@ -27,6 +29,8 @@ const Register = () => {
         errorMsg = err.response.data.message;
       }
       setAlert(errorMsg);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -40,6 +44,15 @@ const Register = () => {
       <div className="relative bg-white/20 backdrop-blur-xl p-6 md:p-10 rounded-3xl 
       shadow-2xl w-full max-w-md border border-white/30
       animate-[pulse_7s_ease-in-out_infinite]">
+
+        {/* Back Button */}
+        <button 
+          onClick={() => navigate("/login")}
+          className="flex items-center text-white/80 hover:text-white mb-4 text-sm"
+        >
+          <FiArrowLeft className="mr-2" />
+          Back to Login
+        </button>
 
         {/* Heading */}
         <div className="text-center mb-4 md:mb-6">
@@ -83,6 +96,7 @@ const Register = () => {
                 className="w-full bg-transparent outline-none text-gray-800 text-sm md:text-base"
                 onChange={handleChange}
                 required
+                disabled={loading}
               />
             </div>
           </div>
@@ -104,6 +118,7 @@ const Register = () => {
                 className="w-full bg-transparent outline-none text-gray-800 text-sm md:text-base"
                 onChange={handleChange}
                 required
+                disabled={loading}
               />
             </div>
             <p className="text-white/70 text-xs mt-1">Enter a unique government ID (e.g., passport, driver's license)</p>
@@ -126,6 +141,7 @@ const Register = () => {
                 className="w-full bg-transparent outline-none text-gray-800 text-sm md:text-base"
                 onChange={handleChange}
                 required
+                disabled={loading}
               />
             </div>
           </div>
@@ -147,6 +163,7 @@ const Register = () => {
                 className="w-full bg-transparent outline-none text-gray-800 text-sm md:text-base"
                 onChange={handleChange}
                 required
+                disabled={loading}
               />
             </div>
           </div>
@@ -154,13 +171,22 @@ const Register = () => {
           {/* Submit Button */}
           <button
             type="submit"
+            disabled={loading}
             className="w-full py-2.5 md:py-3 rounded-xl
             bg-gradient-to-r from-teal-600 to-blue-600
             hover:from-teal-700 hover:to-blue-700
             text-white font-semibold shadow-lg text-sm md:text-base
-            transform transition duration-300 hover:scale-[1.03]"
+            transform transition duration-300 hover:scale-[1.03]
+            disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            Create Account
+            {loading ? (
+              <div className="flex items-center justify-center">
+                <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
+                Creating Account...
+              </div>
+            ) : (
+              "Create Account"
+            )}
           </button>
         </form>
 
@@ -171,6 +197,7 @@ const Register = () => {
             <button
               onClick={() => navigate("/login")}
               className="text-yellow-200 hover:text-yellow-300 ml-1 font-medium hover:underline bg-transparent border-none cursor-pointer"
+              disabled={loading}
             >
               Sign In
             </button>
