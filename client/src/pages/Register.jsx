@@ -168,12 +168,12 @@ const Register = () => {
         <div className="mt-4 md:mt-6 text-center">
           <p className="text-white/90 text-xs md:text-sm">
             Already have an account?
-            <a
-              href="/login"
-              className="text-yellow-200 hover:text-yellow-300 ml-1 font-medium hover:underline"
+            <button
+              onClick={() => navigate("/login")}
+              className="text-yellow-200 hover:text-yellow-300 ml-1 font-medium hover:underline bg-transparent border-none cursor-pointer"
             >
               Sign In
-            </a>
+            </button>
           </p>
         </div>
       </div>

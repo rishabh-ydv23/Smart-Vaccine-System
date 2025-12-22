@@ -123,11 +123,13 @@ const Login = () => {
         {/* Footer */}
         <div className="mt-4 md:mt-6 text-center">
           <p className="text-white/90 text-xs md:text-sm">
-            Don’t have an account?
-            <a className="text-yellow-300 hover:text-yellow-400 ml-1 font-medium hover:underline" 
-              href="/register">
+            Don't have an account?
+            <button 
+              onClick={() => navigate("/register")}
+              className="text-yellow-300 hover:text-yellow-400 ml-1 font-medium hover:underline bg-transparent border-none cursor-pointer"
+            >
               Create Account
-            </a>
+            </button>
           </p>
         </div>
       </div>
