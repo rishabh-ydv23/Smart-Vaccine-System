@@ -8,26 +8,26 @@ const updateAdminEmail = async () => {
     console.log('✅ MongoDB connected');
 
     // Find the existing admin user
-    const existingAdmin = await User.findOne({ email: 'rishabh@admin@gmail.com' });
+    const existingAdmin = await User.findOne({ email: process.env.ADMIN_EMAIL_OLD || 'rishabh@admin@gmail.com' });
     if (!existingAdmin) {
-      console.log('❌ Admin user not found with email: rishabh@admin@gmail.com');
+      console.log('❌ Admin user not found with email:', process.env.ADMIN_EMAIL_OLD || 'rishabh@admin@gmail.com');
       process.exit(1);
     }
 
     // Check if the new email already exists
-    const emailExists = await User.findOne({ email: 'RishabhAdmin@gmail.com' });
+    const emailExists = await User.findOne({ email: process.env.ADMIN_EMAIL_NEW || 'RishabhAdmin@gmail.com' });
     if (emailExists) {
-      console.log('⚠️  User already exists with email: RishabhAdmin@gmail.com');
+      console.log('⚠️  User already exists with email:', process.env.ADMIN_EMAIL_NEW || 'RishabhAdmin@gmail.com');
       process.exit(1);
     }
 
     // Update the admin email
-    existingAdmin.email = 'RishabhAdmin@gmail.com';
+    existingAdmin.email = process.env.ADMIN_EMAIL_NEW || 'RishabhAdmin@gmail.com';
     await existingAdmin.save();
 
     console.log('✅ Admin email updated successfully!');
-    console.log('📧 New Email: RishabhAdmin@gmail.com');
-    console.log('🔑 Password remains: Rishabh@Project');
+    console.log('📧 New Email:', process.env.ADMIN_EMAIL_NEW || 'RishabhAdmin@gmail.com');
+    console.log('🔑 Password remains unchanged');
     console.log('\nYou can now login with the new email');
 
     process.exit(0);
