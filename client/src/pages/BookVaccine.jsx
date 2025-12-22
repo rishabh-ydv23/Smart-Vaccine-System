@@ -32,15 +32,80 @@ const BookVaccine = () => {
   };
 
   const fetchHospitals = async () => {
-    // Mock hospitals data - in real app, fetch from API
-    setHospitals([
-      { _id: '1', name: 'City General Hospital', location: 'Downtown', availability: 'Available' },
-      { _id: '2', name: 'Metro Health Center', location: 'Midtown', availability: 'Limited' },
-      { _id: '3', name: 'Regional Medical Center', location: 'Uptown', availability: 'Available' },
-    ]);
+    try {
+      // Fetch vaccines and extract unique hospitals
+      const { data: vaccines } = await api.get('/vaccines');
+      
+      // Extract unique hospitals from vaccine data
+      const uniqueHospitals = {};
+      vaccines.forEach(vaccine => {
+        const locationKey = `${vaccine.location.address}-${vaccine.location.city}`;
+        if (!uniqueHospitals[locationKey]) {
+          // Extract hospital name based on known hospital names in our data
+          let hospitalName = '';
+          if (vaccine.location.address.includes('Civil Hospital')) {
+            hospitalName = 'Civil Hospital';
+          } else if (vaccine.location.address.includes('PHC Autholi')) {
+            hospitalName = 'PHC Autholi';
+          } else if (vaccine.location.address.includes('Aam Admi Clinic')) {
+            hospitalName = 'Aam Admi Clinic';
+          } else if (vaccine.location.address.includes('ESI Hospital')) {
+            hospitalName = 'ESI Hospital';
+          } else if (vaccine.location.address.includes('Manjit Singh Bal Hospital')) {
+            hospitalName = 'Manjit Singh Bal Hospital';
+          } else if (vaccine.location.address.includes('Chahal Nagar')) {
+            hospitalName = 'Civil Hospital';
+          } else if (vaccine.location.address.includes('Athouli')) {
+            hospitalName = 'PHC Autholi';
+          } else if (vaccine.location.address.includes('Khothra Rd')) {
+            hospitalName = 'Aam Admi Clinic';
+          } else if (vaccine.location.address.includes('Phagwara HO')) {
+            hospitalName = 'ESI Hospital';
+          } else if (vaccine.location.address.includes('Sondhi Gas Agency')) {
+            hospitalName = 'Manjit Singh Bal Hospital';
+          } else {
+            // Fallback to using part of the address
+            hospitalName = vaccine.location.address.split(',')[0];
+          }
+          
+          uniqueHospitals[locationKey] = {
+            _id: locationKey,
+            name: hospitalName,
+            location: vaccine.location.address,
+            city: vaccine.location.city,
+            pinCode: vaccine.location.pinCode,
+            coordinates: vaccine.location.coordinates,
+            availability: 'Available'
+          };
+        }
+      });
+      
+      setHospitals(Object.values(uniqueHospitals));
+    } catch (error) {
+      console.error('Failed to fetch hospitals:', error);
+      toast.error('Failed to load hospitals');
+      // Fallback to mock data if API fails
+      setHospitals([
+        { _id: '1', name: 'City General Hospital', location: 'Downtown', availability: 'Available' },
+        { _id: '2', name: 'Metro Health Center', location: 'Midtown', availability: 'Limited' },
+        { _id: '3', name: 'Regional Medical Center', location: 'Uptown', availability: 'Available' },
+      ]);
+    }
   };
 
-  const timeSlots = ['09:00', '10:00', '11:00', '14:00', '15:00', '16:00'];
+  // Generate 30-minute time slots from 9:00 AM to 5:30 PM
+  const generateTimeSlots = () => {
+    const slots = [];
+    for (let hour = 9; hour <= 17; hour++) {
+      slots.push(`${hour.toString().padStart(2, '0')}:00`);
+      if (hour < 17) { // Don't add 30 min for the last hour
+        slots.push(`${hour.toString().padStart(2, '0')}:30`);
+      }
+    }
+    return slots;
+  };
+  
+  const timeSlots = generateTimeSlots();
 
   const handleNext = () => {
     if (step < 4) setStep(step + 1);
@@ -206,7 +271,7 @@ const BookVaccine = () => {
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">Select Time</label>
-                  <div className="grid grid-cols-3 gap-2">
+                  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2 max-h-60 overflow-y-auto">
                     {timeSlots.map((time) => (
                       <button
                         key={time}

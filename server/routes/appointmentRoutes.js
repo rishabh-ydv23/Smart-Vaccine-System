@@ -9,7 +9,12 @@ const router = express.Router();
 // POST /api/appointments - user books
 router.post('/', protect, async (req, res) => {
   try {
-    const { vaccineId, date } = req.body;
+    const { vaccineId, hospitalId, date, time } = req.body;
+
+    // Validate required fields
+    if (!vaccineId || !hospitalId || !date || !time) {
+      return res.status(400).json({ message: 'Vaccine, hospital, date, and time are required' });
+    }
 
     const vaccine = await Vaccine.findById(vaccineId);
     if (!vaccine) return res.status(404).json({ message: 'Vaccine not found' });
@@ -18,30 +23,37 @@ router.post('/', protect, async (req, res) => {
       return res.status(400).json({ message: 'Vaccine out of stock' });
     }
 
-    // Convert date to Date object
-    const appointmentDate = new Date(date);
+    // Combine date and time for appointment
+    const appointmentDateStr = date instanceof Date ? date.toISOString().split('T')[0] : new Date(date).toISOString().split('T')[0];
+    const appointmentDateTime = new Date(`${appointmentDateStr}T${time}:00`);
+    
+    // For 30-minute slots, we need to check if any appointment exists in the same 30-minute window at the same hospital
+    const slotStart = new Date(appointmentDateTime);
+    const slotEnd = new Date(slotStart.getTime() + 30 * 60000); // 30 minutes later
 
-    // Calculate the 5-minute slot range
-    const slotStart = new Date(appointmentDate);
-    const slotEnd = new Date(appointmentDate.getTime() + 5 * 60000); // 5 minutes later
-
-    // Check if this exact 5-minute slot is already booked by another user
+    // Check if this time slot is already booked at the same hospital for the same vaccine
     const existingAppointment = await Appointment.findOne({
       vaccineId,
-      date: appointmentDate,
+      hospitalId,
+      date: {
+        $gte: slotStart,
+        $lt: slotEnd
+      },
       status: { $in: ['pending', 'approved', 'completed'] } // Don't count rejected appointments
     });
 
     if (existingAppointment) {
       return res.status(400).json({ 
-        message: 'This time slot is already booked by another user. Please select a different time (slots are 5 minutes each).' 
+        message: 'This time slot is already booked by another user at this hospital. Please select a different time.' 
       });
     }
 
     const appointment = await Appointment.create({
       userId: req.user._id,
       vaccineId,
-      date: appointmentDate,
+      hospitalId,
+      date: appointmentDateTime,
+      time,
       status: 'pending'
     });
 
@@ -73,7 +85,8 @@ router.get('/', protect, adminOnly, async (req, res) => {
   try {
     const appointments = await Appointment.find()
       .populate('userId', 'name email')
-      .populate('vaccineId', 'name');
+      .populate('vaccineId', 'name')
+      .sort({ date: -1 });
     res.json(appointments);
   } catch (err) {
     res.status(500).json({ message: 'Server error' });
