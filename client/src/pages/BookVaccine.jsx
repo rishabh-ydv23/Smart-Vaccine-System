@@ -159,7 +159,6 @@ const BookVaccine = () => {
                   >
                     <h3 className="font-semibold text-gray-900">{vaccine.name}</h3>
                     <p className="text-sm text-gray-600 mt-1">{vaccine.description}</p>
-                    <p className="text-sm font-medium text-teal-600 mt-2">₹{vaccine.price}</p>
                   </div>
                 ))}
               </div>
