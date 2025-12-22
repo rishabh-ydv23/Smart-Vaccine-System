@@ -77,7 +77,6 @@ const vaccines = [
     }
   }
 ];
-];
 
 const seedVaccines = async () => {
   try {
