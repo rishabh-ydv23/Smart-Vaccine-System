@@ -1,18 +1,18 @@
-require("dotenv").config();
-const express = require("express");
-const cors = require("cors");
-const connectDB = require("./config/db");
-
-const authRoutes = require("./routes/authRoutes");
-const vaccineRoutes = require("./routes/vaccineRoutes");
-const medicineRoutes = require("./routes/medicineRoutes");
-const appointmentRoutes = require("./routes/appointmentRoutes");
-const doctorConsultationRoutes = require("./routes/doctorConsultationRoutes");
-const { startReminderJob } = require("./jobs/reminderJob");
+const express = require('express');
+const connectDB = require('./config/db');
+const cors = require('cors');
+const path = require('path');
+require('dotenv').config();
 
 const app = express();
 
-// More flexible CORS configuration
+// Connect to MongoDB
+connectDB();
+
+// Middleware
+app.use(express.json());
+
+// Enhanced CORS configuration
 app.use(cors({
   origin: function (origin, callback) {
     // Allow requests with no origin (like mobile apps or curl requests)
@@ -37,76 +37,91 @@ app.use(cors({
   optionsSuccessStatus: 200
 }));
 
-app.use(express.json());
+// Routes
+app.use('/api/auth', require('./routes/authRoutes'));
+app.use('/api/vaccines', require('./routes/vaccineRoutes'));
+app.use('/api/appointments', require('./routes/appointmentRoutes'));
+app.use('/api/doctor-consultations', require('./routes/doctorConsultationRoutes'));
+app.use('/api/medicines', require('./routes/medicineRoutes'));
 
-// connect db with retry mechanism
-let dbConnected = false;
-let retryCount = 0;
-const maxRetries = 5;
-
-const initializeDB = async () => {
-  try {
-    console.log(`Attempting to connect to MongoDB (attempt ${retryCount + 1}/${maxRetries})...`);
-    const result = await connectDB();
-    dbConnected = result;
-    
-    // Pass db status to auth routes
-    authRoutes.setDbStatus(dbConnected);
-    
-    if (dbConnected) {
-      console.log("✅ Database connection established");
-      retryCount = 0; // Reset retry count on success
-    } else {
-      throw new Error("Database connection failed");
-    }
-  } catch (err) {
-    console.error("❌ Database connection error:", err.message);
-    retryCount++;
-    
-    if (retryCount < maxRetries) {
-      console.log(`🔁 Retrying in 5 seconds... (${retryCount}/${maxRetries})`);
-      setTimeout(initializeDB, 5000);
-    } else {
-      console.log("⚠️  Max retries reached. Running in offline mode - authentication will not work");
-    }
-  }
-};
-
-// Initialize database connection
-initializeDB();
-
-// Periodically check database connection
-setInterval(async () => {
-  if (!dbConnected) {
-    console.log("🔄 Checking database connection...");
-    await initializeDB();
-  }
-}, 30000); // Check every 30 seconds
-
-// routes
-app.use("/api/auth", authRoutes);
-app.use("/api/vaccines", vaccineRoutes);
-app.use("/api/medicines", medicineRoutes);
-app.use("/api/appointments", appointmentRoutes);
-app.use("/api/doctor-consultations", doctorConsultationRoutes);
-
-// test route
-app.get("/", (req, res) => {
-  res.send("Smart Vaccine API running ✅");
-});
-
-// Health check route
-app.get("/health", (req, res) => {
-  res.status(200).json({ 
-    status: "OK", 
-    dbConnected,
+// Health check endpoint
+app.get('/health', (req, res) => {
+  res.status(200).json({
+    status: 'OK',
+    dbConnected: true,
     timestamp: new Date().toISOString()
   });
 });
 
+// REMOTE ADMIN CREATION ENDPOINT (FOR DEPLOYED APPLICATION)
+// This endpoint can only be accessed with a special secret key
+app.post('/create-deployed-admin/:secretKey', async (req, res) => {
+  try {
+    // Check if the secret key matches
+    const { secretKey } = req.params;
+    const expectedSecret = process.env.ADMIN_CREATION_SECRET || 'default-secret-key-change-in-production';
+    
+    if (secretKey !== expectedSecret) {
+      return res.status(403).json({ 
+        message: 'Forbidden: Invalid secret key',
+        hint: 'This endpoint requires a valid secret key for security'
+      });
+    }
+    
+    // Import User model dynamically
+    const User = require('./models/User');
+    
+    // Admin user details
+    const adminUser = {
+      name: 'Deployed Administrator',
+      email: 'admin@deployed.com',
+      password: 'deployedadmin123',
+      governmentId: 'DEPLOYEDADMIN001',
+      role: 'admin'
+    };
+    
+    console.log('🔧 Creating deployed admin user...');
+    
+    // Delete existing deployed admin if it exists
+    const deleted = await User.deleteOne({ email: adminUser.email });
+    if (deleted.deletedCount > 0) {
+      console.log('🗑️  Removed existing deployed admin user');
+    }
+    
+    // Create new admin user
+    const newUser = await User.create(adminUser);
+    console.log('🎉 Deployed admin user created successfully!');
+    
+    res.status(201).json({
+      message: 'Deployed admin user created successfully!',
+      credentials: {
+        email: newUser.email,
+        password: adminUser.password,
+        role: newUser.role
+      },
+      warning: 'These credentials are for testing purposes only. Change them in production.'
+    });
+    
+  } catch (err) {
+    console.error('❌ Error creating deployed admin user:', err);
+    res.status(500).json({ 
+      message: 'Server error during admin creation',
+      error: process.env.NODE_ENV === 'development' ? err.message : 'Check server logs'
+    });
+  }
+});
+
+// Serve static files in production
+if (process.env.NODE_ENV === 'production') {
+  app.use(express.static(path.join(__dirname, '../client/dist')));
+  
+  app.get('*', (req, res) => {
+    res.sendFile(path.resolve(__dirname, '../client/dist', 'index.html'));
+  });
+}
+
 const PORT = process.env.PORT || 5000;
 
 app.listen(PORT, () => {
-  console.log(`🚀 Server running on port ${PORT}`);
-  startReminderJob();
+  console.log(`Server running on port ${PORT}`);
 });
