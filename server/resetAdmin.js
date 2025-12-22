@@ -14,25 +14,32 @@ const resetAdmin = async () => {
       console.log('🗑️  Old admin user deleted');
     }
 
-    // Also delete any existing user with the new email
-    const existingNewAdmin = await User.findOne({ email: 'rishabh@admin@gmail.com' });
+    // Also delete any existing user with the previous email
+    const existingNewAdmin = await User.findOne({ email: 'admin@smartvaccine.system' });
     if (existingNewAdmin) {
-      await User.deleteOne({ email: 'rishabh@admin@gmail.com' });
-      console.log('🗑️  Existing user with new email deleted');
+      await User.deleteOne({ email: 'admin@smartvaccine.system' });
+      console.log('🗑️  Existing user with previous email deleted');
     }
 
-    // Create new admin user
+    // Also delete any existing user with the target email
+    const existingTargetAdmin = await User.findOne({ email: 'rishabhAdmin@gmail.com' });
+    if (existingTargetAdmin) {
+      await User.deleteOne({ email: 'rishabhAdmin@gmail.com' });
+      console.log('🗑️  Existing user with target email deleted');
+    }
+
+    // Create new admin user with requested credentials
     const admin = await User.create({
-      name: 'Rishabh',
+      name: 'Rishabh Admin',
       email: 'rishabhAdmin@gmail.com',
-      password: 'rishabhProject',
+      password: 'CHANGE_ME_ADMIN_PASSWORD',
       governmentId: 'ADMIN001',
       role: 'admin'
     });
 
     console.log('✅ Admin user reset successfully!');
     console.log('📧 Email: rishabhAdmin@gmail.com');
-    console.log('🔑 Password: [Check script for password]');
+    console.log('🔑 Password: CHANGE_ME_ADMIN_PASSWORD');
     console.log('\nYou can now login and access /admin route');
 
     process.exit(0);
