@@ -17,12 +17,16 @@ services:
         sync: false
       - key: CLIENT_URL
         sync: false
+      - key: ADMIN_CREATION_SECRET
+        sync: false
+      - key: RENDER
+        value: "true"
 
   - type: web
     name: smart-vaccine-frontend
     env: static
     plan: free
-    buildCommand: npm run build
+    buildCommand: npm install && npm run build
     rootDir: client
     staticPublishPath: dist
     envVars:

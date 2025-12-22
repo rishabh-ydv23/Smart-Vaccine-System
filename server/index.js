@@ -111,8 +111,11 @@ app.post('/create-deployed-admin/:secretKey', async (req, res) => {
   }
 });
 
-// Serve static files in production
-if (process.env.NODE_ENV === 'production') {
+// Serve static files in production (only when frontend is bundled with backend)
+// Skip this in Render deployment where frontend is a separate service
+const IS_RENDER_DEPLOYMENT = process.env.RENDER;
+
+if (process.env.NODE_ENV === 'production' && !IS_RENDER_DEPLOYMENT) {
   app.use(express.static(path.join(__dirname, '../client/dist')));
   
   app.get('*', (req, res) => {

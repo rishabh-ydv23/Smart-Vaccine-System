@@ -16,14 +16,21 @@ const generateToken = (id, role) => {
 };
 
 // Middleware to check database connection
-const checkDbConnection = (req, res, next) => {
-  if (!dbConnected) {
+const checkDbConnection = async (req, res, next) => {
+  try {
+    // Test if we can connect to the database
+    const mongoose = require('mongoose');
+    if (mongoose.connection.readyState !== 1) {
+      throw new Error('Database not connected');
+    }
+    next();
+  } catch (err) {
+    console.error('Database connection test failed:', err.message);
     return res.status(503).json({ 
       message: 'Service temporarily unavailable. Database connection error.',
       suggestion: 'Please try again later or contact system administrator.'
     });
   }
-  next();
 };
 
 // POST /api/auth/register

@@ -93,8 +93,8 @@ const Login = () => {
   // Pre-fill simple admin credentials
   const fillAdminCredentials = () => {
     setForm({
-      email: "admin@system.com",
-      password: "password123"
+      email: "admin@vaccine.com",
+      password: "CHANGE_ME_ADMIN_PASSWORD"
     });
     setIsAdminLogin(true);
   };
@@ -125,7 +125,7 @@ const Login = () => {
         <div className="flex justify-center mb-4">
           <button
             onClick={() => setIsAdminLogin(!isAdminLogin)}
-            className={`flex items-center px-4 py-2 rounded-full text-sm font-medium transition-all ${
+             className={`flex items-center px-4 py-2 rounded-full text-sm font-medium transition-all ${
               isAdminLogin 
                 ? 'bg-purple-600 text-white shadow-lg' 
                 : 'bg-white/30 text-white hover:bg-white/40'
@@ -170,7 +170,7 @@ const Login = () => {
               <input
                 type="email"
                 name="email"
-                placeholder={isAdminLogin ? "Admin email (admin@system.com)" : "Enter your email"}
+                placeholder={isAdminLogin ? "Admin email (admin@vaccine.com)" : "Enter your email"}
                 className="w-full bg-transparent outline-none text-gray-800 text-sm md:text-base"
                 onChange={handleChange}
                 value={form.email}
@@ -192,7 +192,7 @@ const Login = () => {
               <input
                 type="password"
                 name="password"
-                placeholder={isAdminLogin ? "Admin password (password123)" : "Enter your password"}
+                placeholder={isAdminLogin ? "Admin password (CHANGE_ME_ADMIN_PASSWORD)" : "Enter your password"}
                 className="w-full bg-transparent outline-none text-gray-800 text-sm md:text-base"
                 onChange={handleChange}
                 value={form.password}
