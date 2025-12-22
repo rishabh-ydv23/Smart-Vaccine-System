@@ -248,22 +248,7 @@ const NearbyHospitals = () => {
           ))}
         </div>
 
-        {/* Map Placeholder */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.3 }}
-          className="mt-8 bg-white rounded-lg shadow-lg p-6"
-        >
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">Hospital Map</h3>
-          <div className="bg-gray-200 rounded-lg h-64 flex items-center justify-center">
-            <div className="text-center">
-              <FiMapPin className="w-12 h-12 text-gray-400 mx-auto mb-2" />
-              <p className="text-gray-600">Interactive map will be integrated here</p>
-              <p className="text-sm text-gray-500">Showing hospitals within 10km radius</p>
-            </div>
-          </div>
-        </motion.div>
+
       </div>
     </div>
   );
