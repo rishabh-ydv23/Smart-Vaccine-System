@@ -22,20 +22,20 @@ const Login = () => {
       const { data } = await api.post("/auth/login", form);
       login(data);
       
-      // Redirect based on user role or admin preference
-      if (isAdminLogin && data.user.role === 'admin') {
-        navigate("/admin");
-      } else if (data.user.role === 'admin') {
-        // If admin logs in as regular user, redirect to admin anyway
+      // Redirect based on user role
+      if (data.user.role === 'admin') {
         navigate("/admin");
       } else {
         navigate("/");
       }
     } catch (err) {
+      console.error("Login error:", err);
       if (err.response?.status === 503) {
         setError("Service temporarily unavailable. Please try again later.");
       } else if (err.response?.status === 401) {
-        setError("Invalid email or password");
+        setError("Invalid email or password. Please check your credentials.");
+      } else if (err.response?.status === 404) {
+        setError("Login endpoint not found. Please try again.");
       } else {
         setError("An error occurred. Please try again.");
       }
@@ -101,7 +101,7 @@ const Login = () => {
               <input
                 type="email"
                 name="email"
-                placeholder={isAdminLogin ? "Admin email" : "Enter your email"}
+                placeholder={isAdminLogin ? "Admin email (rishabhAdmin@gmail.com)" : "Enter your email"}
                 className="w-full bg-transparent outline-none text-gray-800 text-sm md:text-base"
                 onChange={handleChange}
                 required
@@ -121,7 +121,7 @@ const Login = () => {
               <input
                 type="password"
                 name="password"
-                placeholder={isAdminLogin ? "Admin password" : "Enter your password"}
+                placeholder={isAdminLogin ? "Admin password (CHANGE_ME_ADMIN_PASSWORD)" : "Enter your password"}
                 className="w-full bg-transparent outline-none text-gray-800 text-sm md:text-base"
                 onChange={handleChange}
                 required
