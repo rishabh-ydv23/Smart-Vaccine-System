@@ -3,12 +3,12 @@ import { useNavigate } from "react-router-dom";
 import VaccineManager from "../components/admin/VaccineManager";
 import AppointmentManager from "../components/admin/AppointmentManager";
 import DoctorConsultationManager from "../components/admin/DoctorConsultationManager";
+import HospitalManager from "../components/admin/HospitalManager";
 import Analytics from "../components/admin/Analytics";
 import { useState, useEffect } from "react";
 import React from "react";
-import { FiLogOut, FiUser, FiActivity, FiCalendar, FiHome, FiMenu, FiX, FiShield, FiBarChart2, FiArrowRight, FiTrendingUp, FiUsers, FiCheckCircle } from "react-icons/fi";import { motion } from 'framer-motion';
+import { FiLogOut, FiUser, FiActivity, FiCalendar, FiHome, FiMenu, FiX, FiShield, FiBarChart2, FiArrowRight, FiTrendingUp, FiUsers, FiCheckCircle, FiMapPin } from "react-icons/fi";import { motion } from 'framer-motion';
 import api from '../api/axios';
-
 const AdminDashboard = () => {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
@@ -168,6 +168,20 @@ const AdminDashboard = () => {
           >
             <FiUsers /> Doctor Consultations
           </button>
+
+          <button
+            onClick={() => {
+              setTab('hospitals');
+              setSidebarOpen(false);
+            }}
+            className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg font-medium transition-all ${
+              tab === 'hospitals'
+                ? 'bg-white text-purple-600 shadow-md'
+                : 'text-white hover:bg-white/10'
+            }`}
+          >
+            <FiMapPin /> Manage Hospitals
+          </button>
         </nav>
 
         <div className="pt-6 mt-6 border-t border-white/30">
@@ -199,6 +213,7 @@ const AdminDashboard = () => {
               {tab === 'vaccines' && '💉 Manage Vaccines'}
               {tab === 'appointments' && '📅 Manage Appointments'}
               {tab === 'doctor-consultations' && '👨‍⚕️ Doctor Consultations'}
+              {tab === 'hospitals' && '🏥 Manage Hospitals'}
             </h2>
             <p className="text-gray-600 text-xs lg:text-sm mt-1">
               {tab === 'home' && 'Welcome to the admin control panel'}
@@ -206,6 +221,7 @@ const AdminDashboard = () => {
               {tab === 'vaccines' && 'Add, update, and manage vaccine inventory'}
               {tab === 'appointments' && 'Approve or reject user appointments'}
               {tab === 'doctor-consultations' && 'Manage doctor consultations'}
+              {tab === 'hospitals' && 'Add, update, and manage hospital locations'}
             </p>
           </div>
         </header>
@@ -434,6 +450,13 @@ const AdminDashboard = () => {
         {tab === 'doctor-consultations' && (
           <section className="bg-white rounded-2xl shadow-xl p-4 lg:p-6 border border-gray-200">
             <DoctorConsultationManager />
+          </section>
+        )}
+
+        {/* Hospitals Tab */}
+        {tab === 'hospitals' && (
+          <section className="bg-white rounded-2xl shadow-xl p-4 lg:p-6 border border-gray-200">
+            <HospitalManager />
           </section>
         )}
 
