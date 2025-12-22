@@ -24,14 +24,15 @@ const resetAdmin = async () => {
     // Create new admin user
     const admin = await User.create({
       name: 'Rishabh',
-      email: 'rishabh@admin@gmail.com',
-      password: 'Rishabh@Project',
+      email: 'rishabhAdmin@gmail.com',
+      password: 'rishabhProject',
+      governmentId: 'ADMIN001',
       role: 'admin'
     });
 
     console.log('✅ Admin user reset successfully!');
-    console.log('📧 Email: rishabh@admin@gmail.com');
-    console.log('🔑 Password: Rishabh@Project');
+    console.log('📧 Email: rishabhAdmin@gmail.com');
+    console.log('🔑 Password: [Check script for password]');
     console.log('\nYou can now login and access /admin route');
 
     process.exit(0);
