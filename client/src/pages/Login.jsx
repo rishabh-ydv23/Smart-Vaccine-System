@@ -11,6 +11,7 @@ const Login = () => {
   const [form, setForm] = useState({ email: "", password: "" });
   const [isAdminLogin, setIsAdminLogin] = useState(false);
   const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
 
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
@@ -18,14 +19,21 @@ const Login = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setLoading(true);
+    setError("");
+    
     try {
+      console.log("Attempting login with:", form);
       const { data } = await api.post("/auth/login", form);
+      console.log("Login response:", data);
       login(data);
       
       // Redirect based on user role
       if (data.user.role === 'admin') {
+        console.log("Redirecting to admin dashboard");
         navigate("/admin");
       } else {
+        console.log("Redirecting to user dashboard");
         navigate("/");
       }
     } catch (err) {
@@ -35,10 +43,14 @@ const Login = () => {
       } else if (err.response?.status === 401) {
         setError("Invalid email or password. Please check your credentials.");
       } else if (err.response?.status === 404) {
-        setError("Login endpoint not found. Please try again.");
+        setError("Login endpoint not found. Please check the API URL.");
+      } else if (err.code === 'ERR_NETWORK') {
+        setError("Network error. Please check your connection.");
       } else {
-        setError("An error occurred. Please try again.");
+        setError(`Login failed: ${err.response?.data?.message || err.message || "Unknown error"}`);
       }
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -105,6 +117,7 @@ const Login = () => {
                 className="w-full bg-transparent outline-none text-gray-800 text-sm md:text-base"
                 onChange={handleChange}
                 required
+                disabled={loading}
               />
             </div>
           </div>
@@ -125,6 +138,7 @@ const Login = () => {
                 className="w-full bg-transparent outline-none text-gray-800 text-sm md:text-base"
                 onChange={handleChange}
                 required
+                disabled={loading}
               />
             </div>
           </div>
@@ -132,13 +146,22 @@ const Login = () => {
           {/* Button */}
           <button
             type="submit"
+            disabled={loading}
             className="w-full py-2.5 md:py-3 rounded-xl 
             bg-gradient-to-r from-blue-700 to-cyan-500 
             hover:from-blue-800 hover:to-cyan-600
             text-white font-semibold shadow-lg text-sm md:text-base
-            transform transition duration-300 hover:scale-[1.03]"
+            transform transition duration-300 hover:scale-[1.03]
+            disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            {isAdminLogin ? "Admin Sign In" : "Sign In"}
+            {loading ? (
+              <div className="flex items-center justify-center">
+                <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
+                Signing in...
+              </div>
+            ) : (
+              isAdminLogin ? "Admin Sign In" : "Sign In"
+            )}
           </button>
         </form>
 
@@ -149,6 +172,7 @@ const Login = () => {
             <button 
               onClick={() => navigate("/register")}
               className="text-yellow-300 hover:text-yellow-400 ml-1 font-medium hover:underline bg-transparent border-none cursor-pointer"
+              disabled={loading}
             >
               Create Account
             </button>
