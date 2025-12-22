@@ -90,13 +90,9 @@ const Login = () => {
     }
   };
 
-  // Pre-fill simple admin credentials
-  const fillAdminCredentials = () => {
-    setForm({
-      email: "admin@vaccine.com",
-      password: "CHANGE_ME_ADMIN_PASSWORD"
-    });
-    setIsAdminLogin(true);
+  // Toggle admin login mode
+  const toggleAdminLogin = () => {
+    setIsAdminLogin(!isAdminLogin);
   };
 
   return (
@@ -136,15 +132,12 @@ const Login = () => {
           </button>
         </div>
 
-        {/* Admin Credential Helper */}
+        {/* Admin Info */}
         {isAdminLogin && (
           <div className="mb-4 text-center">
-            <button
-              onClick={fillAdminCredentials}
-              className="text-xs text-yellow-200 hover:text-yellow-300 underline"
-            >
-              Fill simple admin credentials
-            </button>
+            <p className="text-xs text-yellow-200">
+              Enter your admin credentials
+            </p>
           </div>
         )}
 
@@ -170,7 +163,7 @@ const Login = () => {
               <input
                 type="email"
                 name="email"
-                placeholder={isAdminLogin ? "Admin email (admin@vaccine.com)" : "Enter your email"}
+                placeholder={isAdminLogin ? "Admin email" : "Enter your email"}
                 className="w-full bg-transparent outline-none text-gray-800 text-sm md:text-base"
                 onChange={handleChange}
                 value={form.email}
@@ -192,7 +185,7 @@ const Login = () => {
               <input
                 type="password"
                 name="password"
-                placeholder={isAdminLogin ? "Admin password (CHANGE_ME_ADMIN_PASSWORD)" : "Enter your password"}
+                placeholder={isAdminLogin ? "Admin password" : "Enter your password"}
                 className="w-full bg-transparent outline-none text-gray-800 text-sm md:text-base"
                 onChange={handleChange}
                 value={form.password}
