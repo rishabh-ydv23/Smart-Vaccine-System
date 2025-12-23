@@ -3,7 +3,18 @@ import api from "../../api/axios";
 
 const VaccineManager = () => {
   const [vaccines, setVaccines] = useState([]);
-  const [form, setForm] = useState({ name: "", doseRequired: 1, availableQuantity: 0 });
+  const [form, setForm] = useState({ 
+    name: "", 
+    doseRequired: 1, 
+    availableQuantity: 0,
+    location: {
+      type: 'Point',
+      coordinates: [77.2088, 28.6139], // Default coordinates (New Delhi)
+      address: '',
+      city: '',
+      pinCode: ''
+    }
+  });
 
   const fetchVaccines = async () => {
     const { data } = await api.get("/vaccines");
@@ -16,11 +27,38 @@ const VaccineManager = () => {
 
   const handleSubmit = async () => {
     try {
-      await api.post("/vaccines", form);
-      setForm({ name: "", doseRequired: 1, availableQuantity: 0 });
+      // Prepare the vaccine data with location
+      const vaccineData = {
+        name: form.name,
+        doseRequired: parseInt(form.doseRequired) || 1,
+        availableQuantity: parseInt(form.availableQuantity) || 0,
+        location: {
+          type: 'Point',
+          coordinates: [parseFloat(form.location.coordinates[0]), parseFloat(form.location.coordinates[1])],
+          address: form.location.address,
+          city: form.location.city,
+          pinCode: form.location.pinCode
+        }
+      };
+      
+      await api.post("/vaccines", vaccineData);
+      setForm({ 
+        name: "", 
+        doseRequired: 1, 
+        availableQuantity: 0,
+        location: {
+          type: 'Point',
+          coordinates: [77.2088, 28.6139],
+          address: '',
+          city: '',
+          pinCode: ''
+        }
+      });
       fetchVaccines();
     } catch (err) {
-      alert("Error adding vaccine");
+      console.error('Error adding vaccine:', err);
+      const errorMessage = err.response?.data?.message || err.response?.data?.error || 'Error adding vaccine';
+      alert(`Error adding vaccine: ${errorMessage}`);
     }
   };
 
@@ -43,6 +81,7 @@ const VaccineManager = () => {
             <li>Enter the full vaccine name (e.g., "COVID-19 Vaccine (Pfizer)")</li>
             <li>Doses Required: Number of shots needed (1 or 2 typically)</li>
             <li>Stock Quantity: How many doses are available</li>
+            <li>Location: Enter the address, city, PIN code, and coordinates where the vaccine will be available</li>
           </ul>
         </div>
 
@@ -81,6 +120,90 @@ const VaccineManager = () => {
             />
           </div>
         </div>
+        
+        <div className="mb-4 p-4 bg-blue-50 rounded-lg border border-blue-200">
+          <h4 className="font-medium text-blue-800 mb-2">Location Information</h4>
+          <p className="text-blue-700 text-sm mb-3">Enter the location where this vaccine will be available</p>
+          
+          <div className="grid md:grid-cols-4 gap-3">
+            <div className="md:col-span-2">
+              <label className="block text-xs font-medium text-gray-700 mb-1">Address</label>
+              <input
+                placeholder="Full address"
+                value={form.location.address}
+                onChange={(e) => setForm({
+                  ...form, 
+                  location: { ...form.location, address: e.target.value }
+                })}
+                className="w-full border border-gray-300 px-4 py-2.5 rounded-lg focus:border-green-500 focus:ring-1 focus:ring-green-500 transition-all outline-none"
+              />
+            </div>
+            
+            <div>
+              <label className="block text-xs font-medium text-gray-700 mb-1">City</label>
+              <input
+                placeholder="City"
+                value={form.location.city}
+                onChange={(e) => setForm({
+                  ...form, 
+                  location: { ...form.location, city: e.target.value }
+                })}
+                className="w-full border border-gray-300 px-4 py-2.5 rounded-lg focus:border-green-500 focus:ring-1 focus:ring-green-500 transition-all outline-none"
+              />
+            </div>
+            
+            <div>
+              <label className="block text-xs font-medium text-gray-700 mb-1">PIN Code</label>
+              <input
+                placeholder="PIN code"
+                value={form.location.pinCode}
+                onChange={(e) => setForm({
+                  ...form, 
+                  location: { ...form.location, pinCode: e.target.value }
+                })}
+                className="w-full border border-gray-300 px-4 py-2.5 rounded-lg focus:border-green-500 focus:ring-1 focus:ring-green-500 transition-all outline-none"
+              />
+            </div>
+          </div>
+          
+          <div className="grid md:grid-cols-2 gap-3 mt-3">
+            <div>
+              <label className="block text-xs font-medium text-gray-700 mb-1">Longitude</label>
+              <input
+                type="number"
+                step="any"
+                placeholder="Longitude"
+                value={form.location.coordinates[0]}
+                onChange={(e) => setForm({
+                  ...form, 
+                  location: { 
+                    ...form.location, 
+                    coordinates: [parseFloat(e.target.value) || 77.2088, form.location.coordinates[1]] 
+                  }
+                })}
+                className="w-full border border-gray-300 px-4 py-2.5 rounded-lg focus:border-green-500 focus:ring-1 focus:ring-green-500 transition-all outline-none"
+              />
+            </div>
+            
+            <div>
+              <label className="block text-xs font-medium text-gray-700 mb-1">Latitude</label>
+              <input
+                type="number"
+                step="any"
+                placeholder="Latitude"
+                value={form.location.coordinates[1]}
+                onChange={(e) => setForm({
+                  ...form, 
+                  location: { 
+                    ...form.location, 
+                    coordinates: [form.location.coordinates[0], parseFloat(e.target.value) || 28.6139] 
+                  }
+                })}
+                className="w-full border border-gray-300 px-4 py-2.5 rounded-lg focus:border-green-500 focus:ring-1 focus:ring-green-500 transition-all outline-none"
+              />
+            </div>
+          </div>
+        </div>
 
         <button 
           onClick={handleSubmit}
@@ -99,6 +222,7 @@ const VaccineManager = () => {
                 <th className="text-left py-3 px-4 font-semibold text-sm">Vaccine Name</th>
                 <th className="text-left py-3 px-4 font-semibold text-sm">Stock</th>
                 <th className="text-left py-3 px-4 font-semibold text-sm">Doses Required</th>
+                <th className="text-left py-3 px-4 font-semibold text-sm">Location</th>
                 <th className="text-left py-3 px-4 font-semibold text-sm">Actions</th>
               </tr>
             </thead>
@@ -121,6 +245,16 @@ const VaccineManager = () => {
                     <span className="bg-blue-100 text-blue-800 px-2 py-1 rounded-full text-xs font-medium">
                       {v.doseRequired} dose{v.doseRequired > 1 ? 's' : ''}
                     </span>
+                  </td>
+                  <td className="py-3 px-4 text-gray-600 text-sm">
+                    {v.location ? (
+                      <div>
+                        <div>{v.location.address}</div>
+                        <div className="text-xs text-gray-500">{v.location.city} - {v.location.pinCode}</div>
+                      </div>
+                    ) : (
+                      <span className="text-gray-400 text-xs italic">No location</span>
+                    )}
                   </td>
                   <td className="py-3 px-4">
                     <button 
