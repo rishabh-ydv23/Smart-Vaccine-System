@@ -6,8 +6,8 @@ const testLogin = async () => {
     
     // Test login endpoint with correct admin credentials
     const loginResponse = await axios.post('http://localhost:5000/api/auth/login', {
-      email: 'admin@vaccine.com',
-      password: 'CHANGE_ME_ADMIN_PASSWORD'
+      email: process.env.TEST_ADMIN_EMAIL || 'admin@vaccine.com',
+      password: process.env.TEST_ADMIN_PASSWORD || 'admin123'
     });
     
     console.log('Login successful!');

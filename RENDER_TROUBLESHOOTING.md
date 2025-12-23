@@ -41,8 +41,8 @@
    - Use the Render console to run `npm run create-admin`
    - Or use the API endpoint: `POST /create-deployed-admin/YOUR_SECRET_KEY`
 2. Verify you're using the correct credentials:
-   - Default deployed admin email: `admin@deployed.com`
-   - Default deployed admin password: `deployedadmin123`
+   - Default deployed admin email: Value of `DEPLOYED_ADMIN_EMAIL` environment variable (defaults to `admin@deployed.com`)
+   - Default deployed admin password: Value of `DEPLOYED_ADMIN_PASSWORD` environment variable (defaults to `deployedadmin123`)
 3. Check server logs for authentication errors
 
 ### 5. Environment Variables Not Loading

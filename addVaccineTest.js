@@ -5,8 +5,8 @@ const loginAsAdmin = async () => {
   try {
     console.log('Logging in as admin...');
     const loginResponse = await axios.post('https://smart-vaccine-backend.onrender.com/api/auth/login', {
-      email: 'admin@deployed.com',
-      password: 'deployedadmin123' // Use your actual admin password
+      email: process.env.TEST_ADMIN_EMAIL || 'admin@deployed.com',
+      password: process.env.TEST_ADMIN_PASSWORD || 'deployedadmin123' // Use your actual admin password
     });
     
     console.log('✅ Login successful!');

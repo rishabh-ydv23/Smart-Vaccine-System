@@ -80,8 +80,8 @@ POST https://your-backend-url.onrender.com/create-deployed-admin/YOUR_SECRET_KEY
 Replace `YOUR_SECRET_KEY` with the value you set for `ADMIN_CREATION_SECRET`.
 
 This will create an admin user with:
-- Email: `admin@deployed.com`
-- Password: `deployedadmin123`
+- Email: Value of `DEPLOYED_ADMIN_EMAIL` environment variable (defaults to `admin@deployed.com`)
+- Password: Value of `DEPLOYED_ADMIN_PASSWORD` environment variable (defaults to `deployedadmin123`)
 
 **Important:** Change these default credentials after first login!
 

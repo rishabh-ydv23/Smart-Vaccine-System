@@ -74,9 +74,9 @@ app.post('/create-deployed-admin/:secretKey', async (req, res) => {
     // Admin user details
     const adminUser = {
       name: 'Deployed Administrator',
-      email: 'admin@deployed.com',
-      password: 'deployedadmin123',
-      governmentId: 'DEPLOYEDADMIN001',
+      email: process.env.DEPLOYED_ADMIN_EMAIL || 'admin@deployed.com',
+      password: process.env.DEPLOYED_ADMIN_PASSWORD || 'deployedadmin123',
+      governmentId: process.env.DEPLOYED_ADMIN_GOV_ID || 'DEPLOYEDADMIN001',
       role: 'admin'
     };
     

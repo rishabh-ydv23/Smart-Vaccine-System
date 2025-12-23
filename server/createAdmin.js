@@ -8,26 +8,34 @@ const createAdmin = async () => {
     console.log('✅ MongoDB connected');
 
     // Check if admin already exists
-    const existingAdmin = await User.findOne({ email: process.env.ADMIN_EMAIL || 'admin@vaccine.com' });
+    const adminEmail = process.env.ADMIN_EMAIL || 'admin@vaccine.com';
+    
+    if (!process.env.ADMIN_EMAIL || !process.env.ADMIN_PASSWORD) {
+      console.error('❌ Error: ADMIN_EMAIL and ADMIN_PASSWORD environment variables must be set');
+      console.error('Example: ADMIN_EMAIL=your_admin@example.com ADMIN_PASSWORD=your_secure_password node createAdmin.js');
+      process.exit(1);
+    }
+    
+    const existingAdmin = await User.findOne({ email: adminEmail });
     
     if (existingAdmin) {
       console.log('⚠️  Admin already exists!');
-      console.log('Email:', process.env.ADMIN_EMAIL || 'admin@vaccine.com');
-      console.log('Use the password you created during registration');
+      console.log('Email:', adminEmail);
+      console.log('Use the password you set in ADMIN_PASSWORD environment variable');
       process.exit(0);
     }
 
     // Create admin user
     const admin = await User.create({
       name: process.env.ADMIN_NAME || 'Admin',
-      email: process.env.ADMIN_EMAIL || 'admin@vaccine.com',
-      password: process.env.ADMIN_PASSWORD || 'admin123',
+      email: process.env.ADMIN_EMAIL,
+      password: process.env.ADMIN_PASSWORD,
       governmentId: process.env.ADMIN_GOV_ID || 'ADMIN001',
       role: 'admin'
     });
     console.log('✅ Admin user created successfully!');
-    console.log('📧 Email:', process.env.ADMIN_EMAIL || 'admin@vaccine.com');
-    console.log('🔑 Password: [Check your .env file for ADMIN_PASSWORD]');
+    console.log('📧 Email:', process.env.ADMIN_EMAIL);
+    console.log('🔑 Password: Set from ADMIN_PASSWORD environment variable');
     console.log('\nYou can now login and access /admin route');
 
     process.exit(0);

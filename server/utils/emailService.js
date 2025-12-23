@@ -8,6 +8,13 @@ const transporter = nodemailer.createTransport({
   }
 });
 
+// Validate that email credentials are set
+if (!process.env.EMAIL_USER || !process.env.EMAIL_PASS) {
+  console.warn('⚠️  Email credentials not set. Email functionality will be disabled.');
+  console.warn('Set EMAIL_USER and EMAIL_PASS environment variables to enable email notifications.');
+}
+
+
 const sendReminderEmail = async (to, subject, text) => {
   const mailOptions = {
     from: process.env.EMAIL_USER,

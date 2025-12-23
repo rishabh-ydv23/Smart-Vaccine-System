@@ -21,18 +21,24 @@ const resetAdmin = async () => {
       console.log('🗑️  Existing user with previous email deleted');
     }
 
+    if (!process.env.ADMIN_EMAIL_TARGET || !process.env.ADMIN_PASSWORD) {
+      console.error('❌ Error: ADMIN_EMAIL_TARGET and ADMIN_PASSWORD environment variables must be set');
+      console.error('Example: ADMIN_EMAIL_TARGET=your_admin@example.com ADMIN_PASSWORD=your_secure_password node resetAdmin.js');
+      process.exit(1);
+    }
+    
     // Also delete any existing user with the target email
-    const existingTargetAdmin = await User.findOne({ email: process.env.ADMIN_EMAIL_TARGET || 'rishabhAdmin@gmail.com' });
+    const existingTargetAdmin = await User.findOne({ email: process.env.ADMIN_EMAIL_TARGET });
     if (existingTargetAdmin) {
-      await User.deleteOne({ email: process.env.ADMIN_EMAIL_TARGET || 'rishabhAdmin@gmail.com' });
+      await User.deleteOne({ email: process.env.ADMIN_EMAIL_TARGET });
       console.log('🗑️  Existing user with target email deleted');
     }
 
     // Create new admin user with requested credentials
     const admin = await User.create({
-      name: process.env.ADMIN_NAME || 'Rishabh Admin',
-      email: process.env.ADMIN_EMAIL_TARGET || 'rishabhAdmin@gmail.com',
-      password: process.env.ADMIN_PASSWORD || 'CHANGE_ME_ADMIN_PASSWORD',
+      name: process.env.ADMIN_NAME || 'Admin',
+      email: process.env.ADMIN_EMAIL_TARGET,
+      password: process.env.ADMIN_PASSWORD,
       governmentId: process.env.ADMIN_GOV_ID || 'ADMIN001',
       role: 'admin'
     });

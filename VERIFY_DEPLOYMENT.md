@@ -46,8 +46,8 @@ Expected response:
 {
   "message": "Deployed admin user created successfully!",
   "credentials": {
-    "email": "admin@deployed.com",
-    "password": "deployedadmin123",
+    "email": process.env.DEPLOYED_ADMIN_EMAIL || "admin@deployed.com",
+    "password": process.env.DEPLOYED_ADMIN_PASSWORD || "deployedadmin123",
     "role": "admin"
   },
   "warning": "These credentials are for testing purposes only. Change them in production."
@@ -122,8 +122,8 @@ POST https://your-backend-url.onrender.com/api/auth/login
 Body (using default deployed credentials):
 ```json
 {
-  "email": "admin@deployed.com",
-  "password": "deployedadmin123"
+  "email": process.env.DEPLOYED_ADMIN_EMAIL || "admin@deployed.com",
+  "password": process.env.DEPLOYED_ADMIN_PASSWORD || "deployedadmin123"
 }
 ```
 
