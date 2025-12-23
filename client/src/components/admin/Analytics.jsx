@@ -25,6 +25,14 @@ const Analytics = () => {
         setLoading(false);
       } catch (err) {
         console.error("Failed to fetch analytics", err);
+        // Set default empty data to prevent errors
+        setAnalytics({
+          totalUsers: 0,
+          upcomingAppointments: [],
+          vaccinationStats: [],
+          vaccines: [],
+          statusCounts: []
+        });
         setLoading(false);
       }
     };
@@ -33,20 +41,26 @@ const Analytics = () => {
   }, []);
 
   // Format data for charts
-  const vaccinationData = analytics.vaccinationStats.map(stat => ({
-    name: stat.name,
-    value: stat.count
-  }));
+  const vaccinationData = analytics.vaccinationStats && Array.isArray(analytics.vaccinationStats) 
+    ? analytics.vaccinationStats.map(stat => ({
+        name: stat.name,
+        value: stat.count
+      }))
+    : [];
 
-  const statusData = analytics.statusCounts.map(status => ({
-    name: status._id.charAt(0).toUpperCase() + status._id.slice(1),
-    value: status.count
-  }));
+  const statusData = analytics.statusCounts && Array.isArray(analytics.statusCounts) 
+    ? analytics.statusCounts.map(status => ({
+        name: status._id.charAt(0).toUpperCase() + status._id.slice(1),
+        value: status.count
+      }))
+    : [];
 
-  const stockData = analytics.vaccines.map(vaccine => ({
-    name: vaccine.name,
-    stock: vaccine.availableQuantity
-  }));
+  const stockData = analytics.vaccines && Array.isArray(analytics.vaccines)
+    ? analytics.vaccines.map(vaccine => ({
+        name: vaccine.name,
+        stock: vaccine.availableQuantity
+      }))
+    : [];
 
   const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884d8'];
 
@@ -97,9 +111,11 @@ const Analytics = () => {
         </div>
         
         <div className="bg-gradient-to-r from-orange-500 to-orange-600 rounded-xl p-5 text-white shadow-lg">
-          <h3 className="text-sm font-medium opacity-90">Completed Vaccinations</h3>
+          <h3 className="text-sm font-medium opacity-90">Administered Vaccinations</h3>
           <p className="text-3xl font-bold mt-2">
-            {analytics.vaccinationStats.reduce((sum, stat) => sum + stat.count, 0)}
+            {analytics.vaccinationStats && Array.isArray(analytics.vaccinationStats) 
+              ? analytics.vaccinationStats.reduce((sum, stat) => sum + stat.count, 0)
+              : 0}
           </p>
         </div>
       </div>

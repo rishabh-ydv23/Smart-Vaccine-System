@@ -126,8 +126,9 @@ router.get('/analytics', protect, adminOnly, async (req, res) => {
     }).populate('userId', 'name email').populate('vaccineId', 'name');
     
     // Get vaccination statistics
+    // Count appointments where vaccines were actually administered (vaccinated or completed status)
     const vaccinationStats = await Appointment.aggregate([
-      { $match: { status: 'completed' } },
+      { $match: { status: { $in: ['vaccinated', 'completed'] } } },
       { 
         $group: { 
           _id: '$vaccineId', 
