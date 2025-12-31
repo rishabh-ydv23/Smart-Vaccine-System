@@ -1,4 +1,4 @@
-Screenshot 2025-12-31 224842.png
+
  # Smart Vaccine System
 
 A comprehensive vaccine management system with appointment booking, doctor consultations, and certificate generation.
@@ -92,3 +92,4 @@ For production deployment:
 3. Use environment-specific configuration files
 4. Enable HTTPS for all communications
 5. Regularly update dependencies
+
