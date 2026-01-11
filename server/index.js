@@ -9,7 +9,7 @@ const app = express();
 // Connect to MongoDB
 connectDB();
 
-// Middleware
+// Middleware - Configures express.json() for JSON parsing and CORS for cross-origin requests
 app.use(express.json());
 
 // Enhanced CORS configuration

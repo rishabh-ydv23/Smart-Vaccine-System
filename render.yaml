@@ -32,5 +32,3 @@ services:
     envVars:
       - key: VITE_API_URL
         sync: false
-    domains:
-      - your-custom-domain.com
