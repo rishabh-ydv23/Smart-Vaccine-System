@@ -84,26 +84,23 @@ const AdminDashboard = () => {
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Top Navigation Bar */}
-      <nav className="bg-white shadow-lg sticky top-0 z-50 border-b border-gray-200">
+      <nav className="bg-white shadow-sm sticky top-0 z-50 border-b border-gray-200">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between h-16">
+          <div className="flex justify-between h-14 items-center">
             {/* Logo and Title */}
-            <div className="flex items-center">
-              <div className="flex items-center space-x-3">
-                <motion.div
-                  whileHover={{ scale: 1.1 }}
-                  className="w-8 h-8 bg-gradient-to-r from-purple-600 to-indigo-600 rounded-lg flex items-center justify-center"
-                >
-                  <FiShield className="text-white text-sm" />
-                </motion.div>
-                <div>
-                  <span className="text-xl font-bold text-gray-900">Admin Panel</span>
-                  <p className="text-xs text-gray-500 hidden sm:block">{user?.name}</p>
-                </div>
+            <div className="flex items-center space-x-3">
+              <motion.div
+                whileHover={{ scale: 1.1 }}
+                className="w-8 h-8 bg-gradient-to-r from-purple-600 to-indigo-600 rounded-lg flex items-center justify-center"
+              >
+                <FiShield className="text-white text-sm" />
+              </motion.div>
+              <div>
+                <span className="text-lg font-bold text-gray-900">Admin Panel</span>
               </div>
             </div>
 
-            {/* Desktop Menu Items */}
+            {/* Desktop Menu Items - More Compact */}
             <div className="hidden lg:flex items-center space-x-1">
               {[
                 { id: 'home', label: 'Dashboard', icon: FiHome },
@@ -120,16 +117,16 @@ const AdminDashboard = () => {
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
                     onClick={() => setTab(item.id)}
-                    className={`flex items-center space-x-2 px-4 py-2 text-sm font-medium rounded-lg transition-all duration-200 ${
+                    className={`flex items-center space-x-1.5 px-3 py-1.5 text-sm font-medium rounded-md transition-all duration-200 ${
                       tab === item.id
-                        ? 'bg-purple-100 text-purple-700 border-b-2 border-purple-600'
-                        : 'text-gray-700 hover:text-purple-600 hover:bg-gray-50'
+                        ? 'bg-purple-100 text-purple-700'
+                        : 'text-gray-600 hover:text-purple-600 hover:bg-gray-100'
                     }`}
                   >
                     <Icon className="w-4 h-4" />
                     <span>{item.label}</span>
                     {item.id === 'appointments' && stats.pendingAppointments > 0 && (
-                      <span className="bg-red-500 text-white text-xs px-2 py-0.5 rounded-full ml-1">
+                      <span className="bg-red-500 text-white text-xs px-1.5 py-0.5 rounded-full ml-1">
                         {stats.pendingAppointments > 99 ? '99+' : stats.pendingAppointments}
                       </span>
                     )}
@@ -139,8 +136,8 @@ const AdminDashboard = () => {
             </div>
 
             {/* Search and Actions */}
-            <div className="flex items-center space-x-4">
-              {/* Search Bar */}
+            <div className="flex items-center space-x-3">
+              {/* Search Bar - Compact */}
               <div className="hidden md:block relative">
                 <FiSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 text-sm" />
                 <input
@@ -148,7 +145,7 @@ const AdminDashboard = () => {
                   placeholder="Search..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-64 pl-10 pr-4 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                  className="w-48 pl-9 pr-3 py-1.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-purple-300 focus:border-transparent"
                 />
               </div>
 
@@ -158,7 +155,7 @@ const AdminDashboard = () => {
                 whileTap={{ scale: 0.95 }}
                 onClick={fetchDashboardStats}
                 disabled={loading}
-                className="p-2 text-gray-600 hover:text-purple-600 hover:bg-gray-50 rounded-lg transition-all disabled:opacity-50"
+                className="p-1.5 text-gray-600 hover:text-purple-600 hover:bg-gray-100 rounded-lg transition-all disabled:opacity-50"
                 title="Refresh Data"
               >
                 <FiSettings className={`w-5 h-5 ${loading ? 'animate-spin' : ''}`} />
@@ -169,50 +166,29 @@ const AdminDashboard = () => {
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
                 onClick={() => setSidebarOpen(!sidebarOpen)}
-                className="lg:hidden p-2 text-gray-600 hover:text-purple-600 hover:bg-gray-50 rounded-lg transition-all"
+                className="lg:hidden p-1.5 text-gray-600 hover:text-purple-600 hover:bg-gray-100 rounded-lg transition-all"
               >
                 {sidebarOpen ? <FiX size={20} /> : <FiMenu size={20} />}
               </motion.button>
 
-              {/* User Profile Dropdown */}
-              <div className="relative">
+              {/* User Profile */}
+              <div className="flex items-center space-x-2">
+                <div className="w-8 h-8 bg-purple-100 rounded-full flex items-center justify-center">
+                  <FiUser className="w-4 h-4 text-purple-600" />
+                </div>
+                <span className="hidden sm:block text-sm font-medium text-gray-700">{user?.name}</span>
                 <motion.button
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
-                  onClick={() => setDropdownOpen(!dropdownOpen)}
-                  className="flex items-center space-x-2 text-gray-700 hover:text-purple-600 transition-colors duration-200"
+                  onClick={() => {
+                    logout();
+                    setDropdownOpen(false);
+                  }}
+                  className="p-1.5 text-gray-600 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all"
+                  title="Logout"
                 >
-                  <div className="w-8 h-8 bg-purple-100 rounded-full flex items-center justify-center">
-                    <FiUser className="w-4 h-4 text-purple-600" />
-                  </div>
-                  <FiChevronDown className="w-4 h-4 hidden sm:block" />
+                  <FiLogOut className="w-4 h-4" />
                 </motion.button>
-
-                <AnimatePresence>
-                  {dropdownOpen && (
-                    <motion.div
-                      initial={{ opacity: 0, scale: 0.95, y: -10 }}
-                      animate={{ opacity: 1, scale: 1, y: 0 }}
-                      exit={{ opacity: 0, scale: 0.95, y: -10 }}
-                      className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg py-1 z-10 border"
-                    >
-                      <div className="px-4 py-2 border-b border-gray-100">
-                        <p className="text-sm font-medium text-gray-900">{user?.name}</p>
-                        <p className="text-xs text-gray-500">{user?.email}</p>
-                      </div>
-                      <button
-                        onClick={() => {
-                          logout();
-                          setDropdownOpen(false);
-                        }}
-                        className="flex items-center w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                      >
-                        <FiLogOut className="w-4 h-4 mr-2" />
-                        Logout
-                      </button>
-                    </motion.div>
-                  )}
-                </AnimatePresence>
               </div>
             </div>
           </div>
@@ -225,7 +201,7 @@ const AdminDashboard = () => {
               initial={{ opacity: 0, height: 0 }}
               animate={{ opacity: 1, height: 'auto' }}
               exit={{ opacity: 0, height: 0 }}
-              className="lg:hidden border-t border-gray-200 bg-gray-50"
+              className="lg:hidden border-t border-gray-200 bg-white"
             >
               <div className="px-4 py-3 space-y-1">
                 {/* Mobile Search */}
