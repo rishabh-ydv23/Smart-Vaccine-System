@@ -59,8 +59,34 @@ router.post('/register', checkDbConnection, async (req, res) => {
       return res.status(400).json({ message: 'User with this government ID already exists' });
     }
 
-    const user = await User.create({ name, email, password, governmentId, role: role || 'user' });
+    // Create user with unverified email status
+    const user = await User.create({ 
+      name, 
+      email, 
+      password, 
+      governmentId, 
+      role: role || 'user',
+      isEmailVerified: false
+    });
+    
     console.log('✅ User created successfully:', email);
+    
+    // Generate and send OTP for email verification
+    const OTP = require('../models/OTP');
+    const { generateOTP, storeOTP } = require('../utils/otpService');
+    const { sendOTPEmail } = require('../utils/emailService');
+    
+    const otp = generateOTP();
+    console.log(`Generated OTP for new user ${email}:`, otp);
+    
+    const otpDoc = await storeOTP(email, otp);
+    
+    // Send OTP via email
+    const emailSent = await sendOTPEmail(email, otp);
+    
+    if (!emailSent) {
+      console.warn(`Failed to send verification email to ${email}`);
+    }
 
     res.status(201).json({
       _id: user._id,
@@ -68,7 +94,8 @@ router.post('/register', checkDbConnection, async (req, res) => {
       email: user.email,
       governmentId: user.governmentId,
       role: user.role,
-      token: generateToken(user._id, user.role)
+      isEmailVerified: user.isEmailVerified,
+      message: emailSent ? 'User registered successfully! Please check your email for verification OTP.' : 'User registered successfully! Email verification is pending.'
     });
   } catch (err) {
     console.error('❌ Registration error:', err);
@@ -115,6 +142,14 @@ router.post('/login', checkDbConnection, async (req, res) => {
       console.log('❌ Password does not match for user:', email);
       return res.status(401).json({ message: 'Invalid email or password' });
     }
+    
+    // Check if email is verified
+    if (!user.isEmailVerified) {
+      return res.status(401).json({ 
+        message: 'Please verify your email address before logging in',
+        requiresVerification: true
+      });
+    }
 
     const token = generateToken(user._id, user.role);
     console.log('🎉 Token generated for user:', user.email);
@@ -126,6 +161,7 @@ router.post('/login', checkDbConnection, async (req, res) => {
         email: user.email,
         role: user.role
       },
+      isEmailVerified: user.isEmailVerified,
       token: token
     });
   } catch (err) {

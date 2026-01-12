@@ -39,6 +39,7 @@ app.use(cors({
 
 // Routes
 app.use('/api/auth', require('./routes/authRoutes'));
+app.use('/api/auth', require('./routes/emailVerificationRoutes'));
 app.use('/api/vaccines', require('./routes/vaccineRoutes'));
 app.use('/api/appointments', require('./routes/appointmentRoutes'));
 app.use('/api/doctor-consultations', require('./routes/doctorConsultationRoutes'));
