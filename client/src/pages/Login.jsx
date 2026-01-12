@@ -73,7 +73,12 @@ const Login = () => {
       if (err.response?.status === 503) {
         setError("Service temporarily unavailable. Please try again later.");
       } else if (err.response?.status === 401) {
-        setError("Invalid email or password. Please check your credentials.");
+        // Check if the error is due to unverified email
+        if (err.response.data.requiresVerification) {
+          setError("Please verify your email address before logging in. Check your inbox for the verification email.");
+        } else {
+          setError("Invalid email or password. Please check your credentials.");
+        }
       } else if (err.response?.status === 400) {
         setError(`Bad request: ${err.response.data.message}`);
       } else if (err.response?.status === 404) {
