@@ -135,32 +135,8 @@ const AdminDashboard = () => {
               })}
             </div>
 
-            {/* Search and Actions */}
+            {/* Actions */}
             <div className="flex items-center space-x-3">
-              {/* Search Bar - Compact */}
-              <div className="hidden md:block relative">
-                <FiSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 text-sm" />
-                <input
-                  type="text"
-                  placeholder="Search..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-48 pl-9 pr-3 py-1.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-purple-300 focus:border-transparent"
-                />
-              </div>
-
-              {/* Refresh Button */}
-              <motion.button
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                onClick={fetchDashboardStats}
-                disabled={loading}
-                className="p-1.5 text-gray-600 hover:text-purple-600 hover:bg-gray-100 rounded-lg transition-all disabled:opacity-50"
-                title="Refresh Data"
-              >
-                <FiSettings className={`w-5 h-5 ${loading ? 'animate-spin' : ''}`} />
-              </motion.button>
-
               {/* Mobile Menu Button */}
               <motion.button
                 whileHover={{ scale: 1.05 }}
@@ -204,18 +180,6 @@ const AdminDashboard = () => {
               className="lg:hidden border-t border-gray-200 bg-white"
             >
               <div className="px-4 py-3 space-y-1">
-                {/* Mobile Search */}
-                <div className="mb-3 relative">
-                  <FiSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 text-sm" />
-                  <input
-                    type="text"
-                    placeholder="Search menu..."
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                  />
-                </div>
-
                 {[
                   { id: 'home', label: 'Dashboard', icon: FiHome },
                   { id: 'analytics', label: 'Analytics', icon: FiBarChart2 },
@@ -223,7 +187,7 @@ const AdminDashboard = () => {
                   { id: 'appointments', label: 'Appointments', icon: FiCalendar },
                   { id: 'doctor-consultations', label: 'Consultations', icon: FiUsers },
                   { id: 'hospitals', label: 'Hospitals', icon: FiMapPin }
-                ].filter(item => item.label.toLowerCase().includes(searchQuery.toLowerCase())).map((item) => {
+                ].map((item) => {
                   const Icon = item.icon;
                   return (
                     <motion.button
