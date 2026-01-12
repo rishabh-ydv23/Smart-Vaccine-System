@@ -31,7 +31,8 @@ const createAdmin = async () => {
       email: process.env.ADMIN_EMAIL,
       password: process.env.ADMIN_PASSWORD,
       governmentId: process.env.ADMIN_GOV_ID || 'ADMIN001',
-      role: 'admin'
+      role: 'admin',
+      isEmailVerified: true  // Admin accounts are verified by default
     });
     console.log('✅ Admin user created successfully!');
     console.log('📧 Email:', process.env.ADMIN_EMAIL);
