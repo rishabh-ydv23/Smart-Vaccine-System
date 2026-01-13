@@ -4,7 +4,7 @@ export const emailVerificationApi = {
   // Send OTP to user's email
   sendOtp: async (email) => {
     try {
-      const response = await api.post('/auth/send-otp', { email });
+      const response = await api.post('/email-verification/send-otp', { email });
       return response.data;
     } catch (error) {
       if (error.response) {
@@ -20,7 +20,7 @@ export const emailVerificationApi = {
   // Verify OTP
   verifyOtp: async (email, otp) => {
     try {
-      const response = await api.post('/auth/verify-otp', { email, otp });
+      const response = await api.post('/email-verification/verify-otp', { email, otp });
       return response.data;
     } catch (error) {
       if (error.response) {
@@ -36,7 +36,7 @@ export const emailVerificationApi = {
   // Resend OTP
   resendOtp: async (email) => {
     try {
-      const response = await api.post('/auth/resend-otp', { email });
+      const response = await api.post('/email-verification/resend-otp', { email });
       return response.data;
     } catch (error) {
       if (error.response) {
