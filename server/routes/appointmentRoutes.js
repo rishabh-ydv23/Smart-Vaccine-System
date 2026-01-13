@@ -115,13 +115,11 @@ router.get('/analytics', protect, adminOnly, async (req, res) => {
     // Get total users
     const totalUsers = await User.countDocuments({ role: 'user' });
     
-    // Get upcoming appointments (next 7 days)
-    const startDate = new Date();
-    const endDate = new Date();
-    endDate.setDate(endDate.getDate() + 7);
+    // Get upcoming appointments (all future appointments)
+    const currentDate = new Date();
     
     const upcomingAppointments = await Appointment.find({
-      date: { $gte: startDate, $lte: endDate },
+      date: { $gte: currentDate },
       status: { $in: ['pending', 'approved'] }
     }).populate('userId', 'name email').populate('vaccineId', 'name');
     
