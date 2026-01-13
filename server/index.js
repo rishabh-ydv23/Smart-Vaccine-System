@@ -24,7 +24,7 @@ app.use(cors({
       'http://localhost:5174', 
       'http://localhost:5176',
       'http://localhost:5177',
-      'https://smart-vaccine-system.onrender.com'
+      process.env.CLIENT_URL || 'https://smart-vaccine-system.onrender.com'
     ];
     
     // Check if the origin is in our allowed list or if it's undefined (for server-to-server requests)
