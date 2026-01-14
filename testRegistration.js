@@ -2,11 +2,13 @@ const axios = require('axios');
 
 const testRegistration = async () => {
   try {
+    // Generate a unique email for testing
+    const timestamp = Date.now();
     const response = await axios.post('http://localhost:5000/api/auth/register', {
-      name: 'John Doe',
-      email: 'johndoe@example.com',
+      name: 'Test User ' + timestamp,
+      email: `testuser${timestamp}@example.com`,
       password: 'password123',
-      governmentId: 'GOV123456789'
+      governmentId: 'GOV' + timestamp
     });
     
     console.log('Registration successful:', response.data);
