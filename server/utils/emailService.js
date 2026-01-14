@@ -1,30 +1,26 @@
-const nodemailer = require('nodemailer');
+// SendGrid setup
+const sgMail = require('@sendgrid/mail');
 
-const transporter = nodemailer.createTransport({
-  service: 'gmail',
-  auth: {
-    user: process.env.EMAIL_USER,
-    pass: process.env.EMAIL_PASS
-  }
-});
-
-// Validate that email credentials are set
-if (!process.env.EMAIL_USER || !process.env.EMAIL_PASS) {
-  console.warn('⚠️  Email credentials not set. Email functionality will be disabled.');
-  console.warn('Set EMAIL_USER and EMAIL_PASS environment variables to enable email notifications.');
+// Set SendGrid API key
+if (process.env.SENDGRID_API_KEY) {
+  sgMail.setApiKey(process.env.SENDGRID_API_KEY);
+  console.log('✅ SendGrid initialized successfully');
+} else {
+  console.warn('⚠️  SendGrid API key not set. Email functionality will be disabled.');
+  console.warn('Set SENDGRID_API_KEY environment variable to enable email notifications.');
 }
 
 
 const sendReminderEmail = async (to, subject, text) => {
-  const mailOptions = {
-    from: process.env.EMAIL_USER,
+  const msg = {
     to,
+    from: process.env.EMAIL_FROM || 'noreply@vaxcare-portal.onrender.com',
     subject,
     text
   };
 
   try {
-    await transporter.sendMail(mailOptions);
+    await sgMail.send(msg);
     console.log('📧 Reminder sent to', to);
   } catch (err) {
     console.error('Email error:', err.message);
@@ -32,9 +28,9 @@ const sendReminderEmail = async (to, subject, text) => {
 };
 
 const sendOTPEmail = async (to, otp) => {
-  const mailOptions = {
-    from: process.env.EMAIL_USER,
+  const msg = {
     to,
+    from: process.env.EMAIL_FROM || 'noreply@vaxcare-portal.onrender.com',
     subject: 'Email Verification OTP - Smart Vaccine System',
     html: `
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
@@ -55,7 +51,7 @@ const sendOTPEmail = async (to, otp) => {
   };
 
   try {
-    await transporter.sendMail(mailOptions);
+    await sgMail.send(msg);
     console.log('📧 OTP sent to', to);
     return true;
   } catch (err) {
