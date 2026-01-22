@@ -11,7 +11,9 @@
     "update-admin-email": "node updateAdminEmail.js",
     "seed-vaccines": "node seedVaccines.js",
     "check-vaccines": "node ../checkVaccines.js",
-    "create-local-admin": "node ../createLocalAdmin.js"
+    "create-local-admin": "node ../createLocalAdmin.js",
+    "cleanup-user": "node ../cleanupAccounts.js cleanup",
+    "list-users": "node ../cleanupAccounts.js list"
   },
   "dependencies": {
     "@sendgrid/mail": "^8.1.6",

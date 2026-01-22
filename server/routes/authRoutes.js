@@ -1,6 +1,7 @@
 const express = require('express');
 const jwt = require('jsonwebtoken');
 const User = require('../models/User');
+const { normalizeEmail, createEmailQuery, sanitizeEmailForLogging } = require('../utils/emailUtils');
 
 const router = express.Router();
 
@@ -37,7 +38,17 @@ const checkDbConnection = async (req, res, next) => {
 router.post('/register', checkDbConnection, async (req, res) => {
   try {
     const { name, email, password, governmentId, role } = req.body;
-    console.log('📥 Registration attempt for email:', email);
+    
+    // Normalize and validate email
+    const normalizedEmail = normalizeEmail(email);
+    if (!normalizedEmail) {
+      return res.status(400).json({ 
+        message: 'Invalid email format',
+        suggestion: 'Please provide a valid email address'
+      });
+    }
+    
+    console.log('📥 Registration attempt for email:', sanitizeEmailForLogging(normalizedEmail));
 
     // Validate required fields
     if (!name || !email || !password || !governmentId) {
@@ -47,10 +58,24 @@ router.post('/register', checkDbConnection, async (req, res) => {
       });
     }
 
-    // Check if user with email already exists
-    const emailExists = await User.findOne({ email });
-    if (emailExists) {
-      return res.status(400).json({ message: 'User with this email already exists' });
+    // Check if user with email already exists (case-insensitive)
+    try {
+      const emailQuery = createEmailQuery(normalizedEmail);
+      const emailExists = await User.findOne(emailQuery);
+      
+      if (emailExists) {
+        console.log(`⚠️  Duplicate email attempt: ${sanitizeEmailForLogging(normalizedEmail)} (existing: ${sanitizeEmailForLogging(emailExists.email)})`);
+        return res.status(400).json({ 
+          message: 'User with this email already exists',
+          suggestion: 'Try logging in or use a different email address'
+        });
+      }
+    } catch (queryError) {
+      console.error('❌ Email query error:', queryError);
+      return res.status(400).json({ 
+        message: 'Invalid email format provided',
+        suggestion: 'Please check your email address'
+      });
     }
     
     // Check if user with government ID already exists
@@ -59,10 +84,10 @@ router.post('/register', checkDbConnection, async (req, res) => {
       return res.status(400).json({ message: 'User with this government ID already exists' });
     }
 
-    // Create user with unverified email status
+    // Create user with unverified email status (using normalized email)
     const user = await User.create({ 
       name, 
-      email, 
+      email: normalizedEmail, 
       password, 
       governmentId, 
       role: role || 'user',
@@ -77,7 +102,7 @@ router.post('/register', checkDbConnection, async (req, res) => {
     const { sendOTPEmail } = require('../utils/emailService');
     
     const otp = generateOTP();
-    console.log(`Generated OTP for new user ${email}:`, otp);
+    console.log(`Generated OTP for new user ${sanitizeEmailForLogging(normalizedEmail)}:`, otp);
     
     const otpDoc = await storeOTP(email, otp);
     
@@ -117,7 +142,17 @@ router.post('/register', checkDbConnection, async (req, res) => {
 router.post('/login', checkDbConnection, async (req, res) => {
   try {
     const { email, password } = req.body;
-    console.log('📥 Login attempt for email:', email);
+    
+    // Normalize email for consistent lookup
+    const normalizedEmail = normalizeEmail(email);
+    if (!normalizedEmail) {
+      return res.status(400).json({ 
+        message: 'Invalid email format',
+        required: ['email', 'password']
+      });
+    }
+    
+    console.log('📥 Login attempt for email:', sanitizeEmailForLogging(normalizedEmail));
 
     // Validate required fields
     if (!email || !password) {
@@ -127,9 +162,13 @@ router.post('/login', checkDbConnection, async (req, res) => {
       });
     }
 
-    const user = await User.findOne({ email });
+    // Find user with case-insensitive email lookup
+    const user = await User.findOne({ 
+      email: { $regex: new RegExp(`^${normalizedEmail}$`, 'i') } 
+    });
+    
     if (!user) {
-      console.log('❌ User not found:', email);
+      console.log('❌ User not found:', sanitizeEmailForLogging(normalizedEmail));
       return res.status(401).json({ message: 'Invalid email or password' });
     }
 
