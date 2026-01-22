@@ -14,7 +14,7 @@ if (process.env.SENDGRID_API_KEY) {
 const sendReminderEmail = async (to, subject, text) => {
   const msg = {
     to,
-    from: process.env.EMAIL_FROM || 'noreply@vaxcare-portal.onrender.com',
+    from: process.env.SENDER_EMAIL || process.env.EMAIL_FROM || 'noreply@vaxcare-portal.onrender.com',
     subject,
     text
   };
@@ -30,7 +30,7 @@ const sendReminderEmail = async (to, subject, text) => {
 const sendOTPEmail = async (to, otp) => {
   const msg = {
     to,
-    from: process.env.EMAIL_FROM || 'noreply@vaxcare-portal.onrender.com',
+    from: process.env.SENDER_EMAIL || process.env.EMAIL_FROM || 'noreply@vaxcare-portal.onrender.com',
     subject: 'Email Verification OTP - Smart Vaccine System',
     html: `
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
