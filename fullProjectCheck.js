@@ -50,7 +50,7 @@ async function fullProjectCheck() {
     // Test 4: Email Verification Routes
     console.log('\n4️⃣ Testing Email Verification Routes...');
     try {
-        const sendOtpResponse = await axios.post(`${baseURL}/api/email/send-otp`, {
+        const sendOtpResponse = await axios.post(`${baseURL}/api/email-verification/send-otp`, {
             email: 'test@example.com'
         });
         console.log('✅ Send OTP endpoint accessible');
