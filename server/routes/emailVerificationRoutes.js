@@ -78,34 +78,56 @@ router.post('/verify-otp', async (req, res) => {
       });
     }
     
-    // Check if user exists
-    const user = await User.findOne({ email });
-    if (!user) {
+    // Check if there's a temporary registration for this email
+    const TempRegistration = require('../models/TempRegistration');
+    const tempReg = await TempRegistration.findOne({ email });
+    
+    if (!tempReg) {
       return res.status(404).json({ 
-        message: 'User with this email does not exist' 
+        message: 'No pending registration found for this email' 
+      });
+    }
+    
+    // Check if OTP is expired
+    if (tempReg.otpExpires < new Date()) {
+      await TempRegistration.deleteOne({ _id: tempReg._id });
+      return res.status(400).json({ 
+        message: 'OTP has expired. Please register again.' 
       });
     }
     
     // Verify the OTP
-    const isValid = await verifyOTP(email, otp);
-    
-    if (!isValid) {
+    if (tempReg.otp !== otp) {
       return res.status(400).json({ 
-        message: 'Invalid or expired OTP' 
+        message: 'Invalid OTP' 
       });
     }
     
-    // Update user's email verification status
-    user.isEmailVerified = true;
-    user.emailVerificationToken = undefined;
-    user.emailVerificationExpires = undefined;
-    await user.save();
+    // Create the actual user account
+    const User = require('../models/User');
+    const user = await User.create({ 
+      name: tempReg.name,
+      email: tempReg.email,
+      password: tempReg.password,
+      governmentId: tempReg.governmentId,
+      role: tempReg.role,
+      isEmailVerified: true
+    });
     
-    console.log('✅ Email verified successfully for user:', email);
+    console.log('✅ User account created successfully for:', email);
+    
+    // Clean up temporary registration
+    await TempRegistration.deleteOne({ _id: tempReg._id });
     
     res.status(200).json({ 
-      message: 'Email verified successfully',
-      email: email
+      message: 'Email verified successfully! Account created.',
+      user: {
+        _id: user._id,
+        name: user.name,
+        email: user.email,
+        governmentId: user.governmentId,
+        role: user.role
+      }
     });
     
   } catch (err) {
@@ -117,7 +139,7 @@ router.post('/verify-otp', async (req, res) => {
   }
 });
 
-// Resend OTP endpoint (same as send-otp, but clearer naming for frontend)
+// Resend OTP endpoint (works with temporary registrations)
 router.post('/resend-otp', async (req, res) => {
   try {
     const { email } = req.body;
@@ -130,33 +152,40 @@ router.post('/resend-otp', async (req, res) => {
       });
     }
     
-    // Check if user exists
-    const user = await User.findOne({ email });
-    if (!user) {
+    // Check if there's a temporary registration for this email
+    const TempRegistration = require('../models/TempRegistration');
+    const tempReg = await TempRegistration.findOne({ email });
+    
+    if (!tempReg) {
       return res.status(404).json({ 
-        message: 'User with this email does not exist' 
+        message: 'No pending registration found for this email' 
       });
     }
     
-    // Check if email is already verified
-    if (user.isEmailVerified) {
+    // Check if OTP is expired
+    if (tempReg.otpExpires < new Date()) {
+      await TempRegistration.deleteOne({ _id: tempReg._id });
       return res.status(400).json({ 
-        message: 'Email is already verified' 
+        message: 'Registration has expired. Please register again.' 
       });
     }
     
-    // Generate and send OTP
-    const otp = generateOTP();
-    console.log(`Generated OTP for ${email}:`, otp);
+    // Generate new OTP
+    const { generateOTP } = require('../utils/otpService');
+    const { sendOTPEmail } = require('../utils/emailService');
     
-    const otpDoc = await storeOTP(email, otp);
+    const newOtp = generateOTP();
+    console.log(`Generated new OTP for ${email}:`, newOtp);
     
-    // Send OTP via email
-    const emailSent = await sendOTPEmail(email, otp);
+    // Update temporary registration with new OTP
+    tempReg.otp = newOtp;
+    tempReg.otpExpires = new Date(Date.now() + 15 * 60 * 1000); // 15 minutes
+    await tempReg.save();
+    
+    // Send new OTP via email
+    const emailSent = await sendOTPEmail(email, newOtp);
     
     if (!emailSent) {
-      // Clean up the stored OTP if email couldn't be sent
-      await OTP.deleteOne({ _id: otpDoc._id });
       return res.status(500).json({ 
         message: 'Failed to send OTP email. Please try again later.' 
       });
@@ -187,7 +216,20 @@ router.get('/check-email-verification/:email', async (req, res) => {
       });
     }
     
-    // Check if user exists
+    // First check if there's a temporary registration (pending verification)
+    const TempRegistration = require('../models/TempRegistration');
+    const tempReg = await TempRegistration.findOne({ email });
+    
+    if (tempReg) {
+      return res.status(200).json({ 
+        email: tempReg.email,
+        isEmailVerified: false,
+        registrationPending: true,
+        message: 'Registration is pending. Please verify your email with the OTP.'
+      });
+    }
+    
+    // Check if user exists and is verified
     const user = await User.findOne({ email });
     if (!user) {
       return res.status(404).json({ 

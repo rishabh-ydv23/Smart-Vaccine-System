@@ -16,23 +16,11 @@ const generateToken = (id, role) => {
   return jwt.sign({ id, role }, process.env.JWT_SECRET, { expiresIn: '7d' });
 };
 
-// Middleware to check database connection
-const checkDbConnection = async (req, res, next) => {
-  try {
-    // Test if we can connect to the database
-    const mongoose = require('mongoose');
-    if (mongoose.connection.readyState !== 1) {
-      throw new Error('Database not connected');
-    }
-    next();
-  } catch (err) {
-    console.error('Database connection test failed:', err.message);
-    return res.status(503).json({ 
-      message: 'Service temporarily unavailable. Database connection error.',
-      suggestion: 'Please try again later or contact system administrator.'
-    });
-  }
-};
+// Import the improved database connection checker
+const dbConnectionMiddleware = require('../middleware/dbConnectionChecker');
+
+// Use the improved middleware instead of the old checkDbConnection
+const checkDbConnection = dbConnectionMiddleware;
 
 // POST /api/auth/register
 router.post('/register', checkDbConnection, async (req, res) => {
@@ -84,46 +72,57 @@ router.post('/register', checkDbConnection, async (req, res) => {
       return res.status(400).json({ message: 'User with this government ID already exists' });
     }
 
-    // Create user with unverified email status (using normalized email)
-    const user = await User.create({ 
-      name, 
-      email: normalizedEmail, 
-      password, 
-      governmentId, 
-      role: role || 'user',
-      isEmailVerified: false
-    });
-    
-    console.log('✅ User created successfully:', email);
-    
-    // Generate and send OTP for email verification
-    const OTP = require('../models/OTP');
-    const { generateOTP, storeOTP } = require('../utils/otpService');
+    // Check if there's already a pending registration for this email
+    const TempRegistration = require('../models/TempRegistration');
+    const existingTempReg = await TempRegistration.findOne({ email: normalizedEmail });
+    if (existingTempReg) {
+      return res.status(400).json({ 
+        message: 'Registration already in progress for this email. Please verify your OTP.',
+        suggestion: 'Check your email for the verification code'
+      });
+    }
+
+    // Generate OTP for email verification
+    const { generateOTP } = require('../utils/otpService');
     const { sendOTPEmail } = require('../utils/emailService');
     
     const otp = generateOTP();
-    console.log(`Generated OTP for new user ${sanitizeEmailForLogging(normalizedEmail)}:`, otp);
+    console.log(`Generated OTP for new registration ${sanitizeEmailForLogging(normalizedEmail)}:`, otp);
     
-    const otpDoc = await storeOTP(email, otp);
+    // Store temporary registration data
+    const otpExpires = new Date(Date.now() + 15 * 60 * 1000); // 15 minutes
+    
+    const tempReg = await TempRegistration.create({
+      name,
+      email: normalizedEmail,
+      password,
+      governmentId,
+      role: role || 'user',
+      otp,
+      otpExpires
+    });
+    
+    console.log('✅ Temporary registration created for:', normalizedEmail);
     
     // Send OTP via email
-    const emailSent = await sendOTPEmail(email, otp);
+    const emailSent = await sendOTPEmail(normalizedEmail, otp);
     
     if (!emailSent) {
-      console.warn(`Failed to send verification email to ${email}`);
+      // Clean up the temporary registration if email couldn't be sent
+      await TempRegistration.deleteOne({ _id: tempReg._id });
+      console.warn(`Failed to send verification email to ${normalizedEmail}`);
+      return res.status(500).json({
+        message: 'Failed to send verification email. Please try again later.'
+      });
     }
 
     res.status(201).json({
-      _id: user._id,
-      name: user.name,
-      email: user.email,
-      governmentId: user.governmentId,
-      role: user.role,
-      isEmailVerified: user.isEmailVerified,
-      message: emailSent ? 'User registered successfully! Please check your email for verification OTP.' : 'User registered successfully! Email verification is pending.'
+      message: 'Registration initiated successfully! Please check your email for verification OTP.',
+      email: normalizedEmail,
+      requiresVerification: true
     });
   } catch (err) {
-    console.error('❌ Registration error:', err);
+    console.error('❌ Registration initiation error:', err);
     if (err.code === 11000) {
       // Duplicate key error
       return res.status(400).json({ message: 'User with this email or government ID already exists' });
@@ -132,7 +131,7 @@ router.post('/register', checkDbConnection, async (req, res) => {
       return res.status(400).json({ message: 'Validation error', details: err.message });
     }
     res.status(500).json({ 
-      message: 'Server error during registration',
+      message: 'Server error during registration initiation',
       suggestion: 'Please try again later'
     });
   }
