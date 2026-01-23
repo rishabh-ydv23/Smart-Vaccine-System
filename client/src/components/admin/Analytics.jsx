@@ -126,26 +126,35 @@ const Analytics = () => {
         <div className="bg-white p-5 rounded-xl shadow-md border border-gray-200">
           <h3 className="text-lg font-bold text-gray-800 mb-4">Vaccination Distribution</h3>
           <div className="h-72">
-            <ResponsiveContainer width="100%" height="100%">
-              <PieChart>
-                <Pie
-                  data={vaccinationData}
-                  cx="50%"
-                  cy="50%"
-                  labelLine={true}
-                  outerRadius={80}
-                  fill="#8884d8"
-                  dataKey="value"
-                  label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
-                >
-                  {vaccinationData.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                  ))}
-                </Pie>
-                <Tooltip />
-                <Legend />
-              </PieChart>
-            </ResponsiveContainer>
+            {vaccinationData && vaccinationData.length > 0 ? (
+              <ResponsiveContainer width="100%" height="100%">
+                <PieChart>
+                  <Pie
+                    data={vaccinationData}
+                    cx="50%"
+                    cy="50%"
+                    labelLine={true}
+                    outerRadius={80}
+                    fill="#8884d8"
+                    dataKey="value"
+                    label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
+                  >
+                    {vaccinationData.map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                    ))}
+                  </Pie>
+                  <Tooltip />
+                  <Legend />
+                </PieChart>
+              </ResponsiveContainer>
+            ) : (
+              <div className="flex items-center justify-center h-full">
+                <div className="text-center">
+                  <p className="text-gray-500 text-lg mb-2">No vaccination data available</p>
+                  <p className="text-gray-400 text-sm">Appointments will appear here once bookings are made</p>
+                </div>
+              </div>
+            )}
           </div>
         </div>
 
@@ -153,26 +162,35 @@ const Analytics = () => {
         <div className="bg-white p-5 rounded-xl shadow-md border border-gray-200">
           <h3 className="text-lg font-bold text-gray-800 mb-4">Vaccine Stock Levels</h3>
           <div className="h-72">
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart
-                data={stockData}
-                margin={{ top: 20, right: 30, left: 20, bottom: 60 }}
-              >
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="name" angle={-45} textAnchor="end" height={60} />
-                <YAxis />
-                <Tooltip />
-                <Legend />
-                <Bar dataKey="stock" fill="#8884d8" name="Available Stock">
-                  {stockData.map((entry, index) => (
-                    <Cell 
-                      key={`cell-${index}`} 
-                      fill={entry.stock > 50 ? '#00C49F' : entry.stock > 20 ? '#FFBB28' : '#FF8042'} 
-                    />
-                  ))}
-                </Bar>
-              </BarChart>
-            </ResponsiveContainer>
+            {stockData && stockData.length > 0 ? (
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart
+                  data={stockData}
+                  margin={{ top: 20, right: 30, left: 20, bottom: 60 }}
+                >
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis dataKey="name" angle={-45} textAnchor="end" height={60} />
+                  <YAxis />
+                  <Tooltip />
+                  <Legend />
+                  <Bar dataKey="stock" fill="#8884d8" name="Available Stock">
+                    {stockData.map((entry, index) => (
+                      <Cell 
+                        key={`cell-${index}`} 
+                        fill={entry.stock > 50 ? '#00C49F' : entry.stock > 20 ? '#FFBB28' : '#FF8042'} 
+                      />
+                    ))}
+                  </Bar>
+                </BarChart>
+              </ResponsiveContainer>
+            ) : (
+              <div className="flex items-center justify-center h-full">
+                <div className="text-center">
+                  <p className="text-gray-500 text-lg mb-2">No vaccines available</p>
+                  <p className="text-gray-400 text-sm">Add vaccines to see stock levels</p>
+                </div>
+              </div>
+            )}
           </div>
         </div>
 
@@ -180,31 +198,41 @@ const Analytics = () => {
         <div className="bg-white p-5 rounded-xl shadow-md border border-gray-200 lg:col-span-2">
           <h3 className="text-lg font-bold text-gray-800 mb-4">Appointment Status Distribution</h3>
           <div className="h-72">
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart
-                data={statusData}
-                margin={{ top: 20, right: 30, left: 20, bottom: 50 }}
-              >
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="name" />
-                <YAxis />
-                <Tooltip />
-                <Legend />
-                <Bar dataKey="value" name="Number of Appointments">
-                  {statusData.map((entry, index) => (
-                    <Cell 
-                      key={`cell-${index}`} 
-                      fill={
-                        entry.name === 'Pending' ? '#FFBB28' :
-                        entry.name === 'Approved' ? '#0088FE' :
-                        entry.name === 'Completed' ? '#00C49F' :
-                        '#FF8042'
-                      } 
-                    />
-                  ))}
-                </Bar>
-              </BarChart>
-            </ResponsiveContainer>
+            {statusData && statusData.length > 0 ? (
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart
+                  data={statusData}
+                  margin={{ top: 20, right: 30, left: 20, bottom: 50 }}
+                >
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis dataKey="name" />
+                  <YAxis />
+                  <Tooltip />
+                  <Legend />
+                  <Bar dataKey="value" name="Number of Appointments">
+                    {statusData.map((entry, index) => (
+                      <Cell 
+                        key={`cell-${index}`} 
+                        fill={
+                          entry.name === 'Pending' ? '#FFBB28' :
+                          entry.name === 'Approved' ? '#0088FE' :
+                          entry.name === 'Completed' ? '#00C49F' :
+                          entry.name === 'Vaccinated' ? '#8884d8' :
+                          '#FF8042'
+                        } 
+                      />
+                    ))}
+                  </Bar>
+                </BarChart>
+              </ResponsiveContainer>
+            ) : (
+              <div className="flex items-center justify-center h-full">
+                <div className="text-center">
+                  <p className="text-gray-500 text-lg mb-2">No appointment data available</p>
+                  <p className="text-gray-400 text-sm">Status distribution will appear once appointments are created</p>
+                </div>
+              </div>
+            )}
           </div>
         </div>
       </div>

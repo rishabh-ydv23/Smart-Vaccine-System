@@ -123,10 +123,10 @@ router.get('/analytics', protect, adminOnly, async (req, res) => {
       status: { $in: ['pending', 'approved'] }
     }).populate('userId', 'name email').populate('vaccineId', 'name');
     
-    // Get vaccination statistics
-    // Count appointments where vaccines were actually administered (vaccinated or completed status)
+    // Get vaccination distribution (all appointments grouped by vaccine - comprehensive view)
+    // This shows the distribution of all bookings across vaccines
     const vaccinationStats = await Appointment.aggregate([
-      { $match: { status: { $in: ['vaccinated', 'completed'] } } },
+      { $match: { vaccineId: { $ne: null } } }, // Only include appointments with a vaccine
       { 
         $group: { 
           _id: '$vaccineId', 
@@ -135,8 +135,46 @@ router.get('/analytics', protect, adminOnly, async (req, res) => {
       },
       { $lookup: { from: 'vaccines', localField: '_id', foreignField: '_id', as: 'vaccine' } },
       { $unwind: '$vaccine' },
-      { $project: { name: '$vaccine.name', count: 1 } }
+      { $project: { 
+        name: '$vaccine.name', 
+        count: 1,
+        _id: 0
+      } },
+      { $sort: { count: -1 } }
     ]);
+    
+    // If no vaccination stats or all are null, get all vaccines with their appointment counts
+    let finalVaccinationStats = vaccinationStats && vaccinationStats.length > 0 ? vaccinationStats : null;
+    
+    if (!finalVaccinationStats || finalVaccinationStats.length === 0) {
+      // Get count of appointments for each vaccine
+      const vaccineAppointmentCounts = await Appointment.aggregate([
+        { $match: { vaccineId: { $ne: null } } },
+        { $group: { _id: '$vaccineId', count: { $sum: 1 } } }
+      ]);
+      
+      // Create a map for quick lookup
+      const countMap = {};
+      vaccineAppointmentCounts.forEach(item => {
+        countMap[item._id.toString()] = item.count;
+      });
+      
+      // Get all vaccines and merge with appointment counts
+      const allVaccines = await Vaccine.find({}, 'name _id');
+      finalVaccinationStats = allVaccines.map(vaccine => ({
+        name: vaccine.name,
+        count: countMap[vaccine._id.toString()] || 0
+      })).filter(v => v.count > 0) // Only show vaccines with appointments
+        .sort((a, b) => b.count - a.count); // Sort by count descending
+      
+      // If still empty, show all vaccines with 0 count
+      if (finalVaccinationStats.length === 0) {
+        finalVaccinationStats = allVaccines.map(vaccine => ({
+          name: vaccine.name,
+          count: 0
+        }));
+      }
+    }
     
     // Get stock levels
     const vaccines = await Vaccine.find({}, 'name availableQuantity');
@@ -146,16 +184,36 @@ router.get('/analytics', protect, adminOnly, async (req, res) => {
       { $group: { _id: '$status', count: { $sum: 1 } } }
     ]);
     
+    // Ensure all status types are represented in the response
+    const defaultStatuses = ['pending', 'approved', 'vaccinated', 'completed', 'rejected'];
+    const completeStatusCounts = defaultStatuses.map(status => {
+      const found = statusCounts.find(s => s._id === status);
+      return {
+        _id: status,
+        count: found ? found.count : 0
+      };
+    }).filter(s => s.count > 0 || ['pending', 'approved', 'vaccinated'].includes(s._id)); // Show at least these common statuses
+    
+    console.log('📊 Analytics Data:');
+    console.log('   Total Users:', totalUsers);
+    console.log('   Upcoming Appointments:', upcomingAppointments.length);
+    console.log('   Vaccination Stats:', finalVaccinationStats);
+    console.log('   Vaccines Count:', vaccines.length);
+    console.log('   Status Counts:', completeStatusCounts);
+    
     res.json({
       totalUsers,
       upcomingAppointments,
-      vaccinationStats,
+      vaccinationStats: finalVaccinationStats,
       vaccines,
-      statusCounts
+      statusCounts: completeStatusCounts
     });
   } catch (err) {
-    console.error(err);
-    res.status(500).json({ message: 'Server error' });
+    console.error('❌ Analytics Error:', err);
+    res.status(500).json({ 
+      message: 'Server error while fetching analytics',
+      error: err.message 
+    });
   }
 });
 
