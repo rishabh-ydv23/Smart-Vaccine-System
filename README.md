@@ -1,95 +1,73 @@
+# 💉 Smart Vaccine System (VaxCare Portal)
 
- # Smart Vaccine System
+A comprehensive **full-stack vaccine management system** that enables users to book vaccination appointments, consult doctors online, locate nearby hospitals, and securely manage vaccination certificates — all in one platform.
 
-A comprehensive vaccine management system with appointment booking, doctor consultations, and certificate generation.
+---
 
-## Setup Instructions
+## 🌟 Key Highlights
 
-### Prerequisites
-- Node.js (v14 or higher)
-- MongoDB database
-- npm or yarn
+- End-to-end vaccination booking flow
+- Doctor consultation (chat & video)
+- Location-based nearby hospital discovery
+- Google Maps directions integration
+- Digital vaccination certificates
+- Secure authentication with email verification
+- Admin dashboard for system management
 
-### Backend Setup
+---
 
-1. Navigate to the server directory:
-   ```bash
-   cd server
-   ```
+## 📸 Project Screenshots (User Interface)
 
-2. Install dependencies:
-   ```bash
-   npm install
-   ```
+### 🏠 Home & Health Dashboard
+<img src="images/Screenshot%202026-01-23%20111543.png" width="48%" />
+<img src="images/Screenshot%202026-01-23%20111550.png" width="48%" />
 
-3. Create a `.env` file based on `.env.example`:
-   ```bash
-   cp .env.example .env
-   ```
+---
 
-4. Update the `.env` file with your actual credentials:
-   - MongoDB connection string
-   - JWT secret (use a strong random string)
-   - Email credentials (for sending notifications)
+### ⚡ Quick Actions & Features
+<img src="images/Screenshot%202026-01-23%20111601.png" width="48%" />
+<img src="images/Screenshot%202026-01-23%20111614.png" width="48%" />
 
-5. Start the server:
-   ```bash
-   npm start
-   ```
+---
 
-### Frontend Setup
+### 💉 Book Vaccine – Select Vaccine & Hospital
+<img src="images/Screenshot%202026-01-23%20111622.png" width="48%" />
+<img src="images/Screenshot%202026-01-23%20111633.png" width="48%" />
 
-1. Navigate to the client directory:
-   ```bash
-   cd client
-   ```
+---
 
-2. Install dependencies:
-   ```bash
-   npm install
-   ```
+### 📅 Book Vaccine – Date, Time & Confirmation
+<img src="images/Screenshot%202026-01-23%20111652.png" width="48%" />
+<img src="images/Screenshot%202026-01-23%20111709.png" width="48%" />
 
-3. Create a `.env` file based on `.env.example`:
-   ```bash
-   cp .env.example .env
-   ```
+---
 
-4. Update the `.env` file with your API URL if different from default
+### 👨‍⚕️ Doctor Consultation
+<img src="images/Screenshot%202026-01-23%20111734.png" width="48%" />
+<img src="images/Screenshot%202026-01-23%20111800.png" width="48%" />
 
-5. Start the development server:
-   ```bash
-   npm run dev
-   ```
+---
 
-### Admin Access
+### 📋 My Appointments
+<img src="images/Screenshot%202026-01-23%20111800.png" width="80%" />
 
-To create an admin user, run:
-```bash
-cd server
-node createAdmin.js
-```
+---
 
-Default admin credentials:
-- Email: Value of `ADMIN_EMAIL` environment variable (defaults to `admin@vaccine.com`)
-- Password: Value of `ADMIN_PASSWORD` environment variable (defaults to `admin123`)
+### 📍 Nearby Hospitals & Location Services
+<img src="images/Screenshot%202026-01-23%20111815.png" width="48%" />
+<img src="images/Screenshot%202026-01-23%20111959.png" width="48%" />
 
-You can customize these by modifying the `createAdmin.js` script.
+---
 
-## Features
+### 🗺️ Google Maps Directions Integration
+<img src="images/Screenshot%202026-01-23%20112018.png" width="80%" />
 
-- Vaccine appointment booking
-- Doctor consultation scheduling
-- Digital certificate generation
-- Admin dashboard for managing appointments and vaccines
-- Real-time appointment status updates
-- Location-based hospital finder
+---
 
-## Security Notes
+### 📜 Vaccination Certificate
+<img src="images/Screenshot%202026-01-23%20112032.png" width="80%" />
 
-For production deployment:
-1. Use strong, unique passwords
-2. Rotate JWT secrets regularly
-3. Use environment-specific configuration files
-4. Enable HTTPS for all communications
-5. Regularly update dependencies
+---
 
+### 👤 User Profile Management
+<img src="images/Screenshot%202026-01-23%20112108.png" width="80%" />
