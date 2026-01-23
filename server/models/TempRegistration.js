@@ -9,9 +9,10 @@ const tempRegistrationSchema = new mongoose.Schema({
   email: {
     type: String,
     required: true,
-    unique: true,
     lowercase: true,
-    trim: true
+    trim: true,
+    sparse: true,
+    index: true
   },
   password: {
     type: String,
@@ -21,8 +22,9 @@ const tempRegistrationSchema = new mongoose.Schema({
   governmentId: {
     type: String,
     required: true,
-    unique: true,
-    trim: true
+    trim: true,
+    sparse: true,
+    index: true
   },
   role: {
     type: String,
@@ -44,8 +46,26 @@ const tempRegistrationSchema = new mongoose.Schema({
   }
 });
 
-// Index for efficient querying
+// Before saving, remove any existing pending registration for this email
+// This ensures only one pending registration per email
+tempRegistrationSchema.pre('save', async function(next) {
+  if (this.isNew) {
+    try {
+      // Delete any other pending registrations with same email
+      await mongoose.model('TempRegistration').deleteMany({
+        email: this.email,
+        _id: { $ne: this._id }
+      });
+    } catch (err) {
+      console.error('Error cleaning up duplicate temp registrations:', err);
+    }
+  }
+  next();
+});
+
+// Index for efficient querying and auto-expiration
 tempRegistrationSchema.index({ email: 1 });
 tempRegistrationSchema.index({ otp: 1 });
+tempRegistrationSchema.index({ createdAt: 1 }, { expireAfterSeconds: 3600 });
 
 module.exports = mongoose.model('TempRegistration', tempRegistrationSchema);

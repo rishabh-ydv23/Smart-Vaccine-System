@@ -19,10 +19,13 @@ const EmailVerification = ({ email, onComplete, onCancel }) => {
     setError('');
     
     try {
-      await emailVerificationApi.verifyOtp(email, otp);
+      const result = await emailVerificationApi.verifyOtp(email, otp);
+      
+      // If the backend returns user data after successful verification,
+      // we might want to handle it (e.g., auto-login)
       setSuccess(true);
       setTimeout(() => {
-        onComplete && onComplete();
+        onComplete && onComplete(result);
       }, 1500);
     } catch (err) {
       setError(err.message);

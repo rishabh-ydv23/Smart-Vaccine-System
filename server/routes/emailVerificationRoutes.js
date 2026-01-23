@@ -77,47 +77,69 @@ router.post('/verify-otp', async (req, res) => {
         message: 'Email and OTP are required' 
       });
     }
+
+    // Normalize email
+    const normalizedEmail = email.toLowerCase().trim();
     
     // Check if there's a temporary registration for this email
     const TempRegistration = require('../models/TempRegistration');
-    const tempReg = await TempRegistration.findOne({ email });
+    const tempReg = await TempRegistration.findOne({ email: normalizedEmail });
     
     if (!tempReg) {
       return res.status(404).json({ 
-        message: 'No pending registration found for this email' 
+        message: 'No pending registration found for this email. Please register first.' 
       });
     }
     
     // Check if OTP is expired
     if (tempReg.otpExpires < new Date()) {
       await TempRegistration.deleteOne({ _id: tempReg._id });
+      console.log('⏰ OTP expired for:', normalizedEmail);
       return res.status(400).json({ 
         message: 'OTP has expired. Please register again.' 
       });
     }
     
-    // Verify the OTP
-    if (tempReg.otp !== otp) {
+    // Verify the OTP (case-sensitive comparison)
+    if (tempReg.otp.toString() !== otp.toString()) {
+      console.log('❌ Invalid OTP attempt for:', normalizedEmail);
       return res.status(400).json({ 
-        message: 'Invalid OTP' 
+        message: 'Invalid OTP. Please check and try again.' 
+      });
+    }
+    
+    // Check if user already exists (shouldn't happen, but be safe)
+    const existingUser = await User.findOne({ email: normalizedEmail });
+    if (existingUser) {
+      await TempRegistration.deleteOne({ _id: tempReg._id });
+      console.log('⚠️  User already exists for:', normalizedEmail);
+      return res.status(400).json({ 
+        message: 'User with this email already exists. Please try logging in.' 
       });
     }
     
     // Create the actual user account
-    const User = require('../models/User');
     const user = await User.create({ 
       name: tempReg.name,
-      email: tempReg.email,
+      email: normalizedEmail,
       password: tempReg.password,
       governmentId: tempReg.governmentId,
       role: tempReg.role,
       isEmailVerified: true
     });
     
-    console.log('✅ User account created successfully for:', email);
+    console.log('✅ User account created successfully for:', normalizedEmail);
     
     // Clean up temporary registration
     await TempRegistration.deleteOne({ _id: tempReg._id });
+    
+    // Generate JWT token for auto-login after verification
+    const jwt = require('jsonwebtoken');
+    const token = jwt.sign(
+      { id: user._id, role: user.role }, 
+      process.env.JWT_SECRET, 
+      { expiresIn: '7d' }
+    );
     
     res.status(200).json({ 
       message: 'Email verified successfully! Account created.',
@@ -126,12 +148,22 @@ router.post('/verify-otp', async (req, res) => {
         name: user.name,
         email: user.email,
         governmentId: user.governmentId,
-        role: user.role
-      }
+        role: user.role,
+        isEmailVerified: true
+      },
+      token: token
     });
     
   } catch (err) {
-    console.error('❌ Error verifying OTP:', err);
+    console.error('❌ Error verifying OTP:', err.message);
+    
+    // Handle specific errors
+    if (err.code === 11000) {
+      return res.status(400).json({ 
+        message: 'User with this email or government ID already exists' 
+      });
+    }
+    
     res.status(500).json({ 
       message: 'Server error while verifying OTP',
       suggestion: 'Please try again later'

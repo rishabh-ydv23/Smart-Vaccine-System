@@ -22,8 +22,8 @@ const Register = () => {
     try {
       const response = await api.post("/auth/register", form);
       
-      // Check if email verification is required
-      if (response.data.isEmailVerified === false) {
+      // Check if email verification is required based on new response structure
+      if (response.data.requiresVerification === true) {
         // Show email verification component
         setShowVerification(true);
       } else {
@@ -48,8 +48,13 @@ const Register = () => {
       {showVerification ? (
         <EmailVerification 
           email={form.email}
-          onComplete={() => {
-            setAlert("Email verified successfully! Please log in to continue.");
+          onComplete={(result) => {
+            // Handle successful verification
+            if (result && result.message) {
+              setAlert(result.message);
+            } else {
+              setAlert("Email verified successfully! Please log in to continue.");
+            }
             setTimeout(() => navigate("/login"), 1500);
           }}
           onCancel={() => {
