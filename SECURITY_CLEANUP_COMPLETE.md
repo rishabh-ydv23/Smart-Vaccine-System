@@ -11,12 +11,12 @@
 Your codebase had **6 exposed credentials** that were publicly visible in Git history. All have been **successfully removed and fixed**.
 
 ### Exposed Secrets Found & Removed ✅
-1. ✅ MongoDB password: `MONGODB_PASSWORD_REMOVED`
-2. ✅ SendGrid API Key: `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`
-3. ✅ JWT Secret: `JWT_SECRET_REMOVED`
-4. ✅ Admin Email: `ADMIN_EMAIL_REMOVED`
-5. ✅ Admin Password: `ADMIN_PASSWORD_REMOVED`
-6. ✅ Gmail App Password: `GMAIL_PASSWORD_REMOVED`
+1. ✅ MongoDB password (REDACTED)
+2. ✅ SendGrid API Key (REDACTED)
+3. ✅ JWT Secret (REDACTED)
+4. ✅ Admin Email (REDACTED)
+5. ✅ Admin Password (REDACTED)
+6. ✅ Gmail App Password (REDACTED)
 
 ---
 
