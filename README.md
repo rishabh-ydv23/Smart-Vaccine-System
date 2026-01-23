@@ -20,6 +20,7 @@ A comprehensive **full-stack vaccine management system** that enables users to b
 
 ### 🏠 Home & Health Dashboard
 ```html
-<img src="images/Screenshot 2025-12-31 224623.png" width="48%" />
+<img src="images/health1" width="48%" />
 <img src="images/Screenshot%202026-01-23%20111550.png" width="48%" />
+
 
