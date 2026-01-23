@@ -5,7 +5,7 @@
 After running the setup, an admin account is automatically created with the following credentials:
 
 **Email:** `admin@vaccine.com`
-**Password:** `CHANGE_ME_ADMIN_PASSWORD`
+**Password:** (Set in environment variable ADMIN_PASSWORD)
 
 ## How to Access Admin Panel
 

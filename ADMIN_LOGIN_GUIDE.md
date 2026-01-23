@@ -3,7 +3,7 @@
 ## 📋 Default Admin Account
 
 ### **Email**: `admin@vaccine.com`
-### **Password**: `CHANGE_ME_ADMIN_PASSWORD`
+### **Password**: (See environment variable ADMIN_PASSWORD)
 
 ---
 
@@ -14,7 +14,7 @@ Navigate to: `http://localhost:5174/login` (or your deployed URL)
 
 ### **Step 2: Enter Admin Credentials**
 - **Email**: `admin@vaccine.com`
-- **Password**: `CHANGE_ME_ADMIN_PASSWORD`
+- **Password**: (Check environment variables ADMIN_PASSWORD)
 
 ### **Step 3: Click Login**
 You'll be redirected to the Admin Dashboard
