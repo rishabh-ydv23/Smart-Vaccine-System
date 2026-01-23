@@ -158,7 +158,7 @@ git check-ignore -v server/.env
 
 # Verify secrets removed from git (should be empty)
 git log -S "MONGODB_PASSWORD_REMOVED" --all
-git log -S "SG.0ah2VL2aQMmtbpCMAjYnKQ" --all
+git log -S "SENDGRID_API" --all
 
 # Check git status before pushing
 git status

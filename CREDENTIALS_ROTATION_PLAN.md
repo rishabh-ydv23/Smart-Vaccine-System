@@ -149,7 +149,7 @@ git check-ignore -v server/.env
 ```bash
 # Search for MongoDB password in all commits (should find 0)
 git log -S "MONGODB_PASSWORD_REMOVED" --all
-git log -S "SG.0ah2VL2aQMmtbpCMAjYnKQ" --all
+git log -S "SENDGRID_API" --all
 
 # Should output: "(no commits)"
 ```

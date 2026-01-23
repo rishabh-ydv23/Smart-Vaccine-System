@@ -18,7 +18,7 @@
 ```bash
 # STEP 1: Delete old key from SendGrid
 # Go to: https://app.sendgrid.com/settings/api_keys
-# Find and DELETE key: SG.0ah2VL2aQMmtbpCMAjYnKQ...
+# Find and DELETE the exposed old API key
 # Action: REVOKE IMMEDIATELY
 
 # STEP 2: Generate new key
