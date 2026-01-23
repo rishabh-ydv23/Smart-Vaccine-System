@@ -17,7 +17,7 @@ const testAnalytics = async () => {
     console.log('\n🔐 Logging in as admin...');
     const loginResponse = await axios.post(`${API_URL}/auth/login`, {
       email: 'admin@vaccine.com',
-      password: 'CHANGE_ME_ADMIN_PASSWORD'
+      password: process.env.ADMIN_PASSWORD || 'admin123' // Use env variable
     }, {
       validateStatus: () => true
     });

@@ -44,7 +44,7 @@ const fixAdminVerification = async () => {
     console.log('   Email Verified: Now set to TRUE');
     console.log('\n🔐 You can now login with:');
     console.log('   Email: admin@vaccine.com');
-    console.log('   Password: CHANGE_ME_ADMIN_PASSWORD');
+    console.log('   Password: (Use your ADMIN_PASSWORD environment variable)');
 
     process.exit(0);
   } catch (err) {

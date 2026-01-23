@@ -70,7 +70,7 @@ To customize admin credentials, set these in your `.env` file:
 
 ```env
 ADMIN_EMAIL=admin@vaccine.com
-ADMIN_PASSWORD=CHANGE_ME_ADMIN_PASSWORD
+ADMIN_PASSWORD=<YOUR_SECURE_PASSWORD>
 ADMIN_NAME=Administrator
 ADMIN_GOV_ID=ADMIN001
 ```
@@ -85,7 +85,7 @@ curl -X POST http://localhost:5000/api/auth/login \
   -H "Content-Type: application/json" \
   -d '{
     "email": "admin@vaccine.com",
-    "password": "CHANGE_ME_ADMIN_PASSWORD"
+    "password": "<YOUR_ADMIN_PASSWORD>"
   }'
 ```
 
@@ -122,7 +122,7 @@ After successful admin login:
 
 ### **Issue: "Invalid credentials"**
 - ✅ Verify email is exactly: `admin@vaccine.com`
-- ✅ Verify password is exactly: `CHANGE_ME_ADMIN_PASSWORD`
+- ✅ Verify password is exactly: (check your ADMIN_PASSWORD environment variable)
 - ✅ Check caps lock is OFF
 - ✅ Ensure MongoDB is running
 
