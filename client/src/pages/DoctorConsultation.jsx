@@ -4,7 +4,9 @@ import { FiUser, FiStar, FiMessageSquare, FiVideo, FiFilter } from 'react-icons/
 import toast, { Toaster } from 'react-hot-toast';
 import api from '../api/axios';
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
 const DoctorConsultation = () => {
+  const { user } = useAuth();
   const [doctors, setDoctors] = useState([]);
   const [filteredDoctors, setFilteredDoctors] = useState([]);
   const [filters, setFilters] = useState({
@@ -101,6 +103,10 @@ const DoctorConsultation = () => {
   };
 
   const handleConfirmBooking = async () => {
+    if (!user) {
+      navigate('/login?next=/doctor-consultation');
+      return;
+    }
     try {
       const bookingData = {
         doctorName: selectedDoctor.name,

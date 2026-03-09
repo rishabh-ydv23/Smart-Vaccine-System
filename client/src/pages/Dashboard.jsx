@@ -1,12 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { FiCalendar, FiShield, FiAward, FiArrowRight, FiCheckCircle } from 'react-icons/fi';
 import { useAuth } from '../context/AuthContext';
 import api from '../api/axios';
 
 const Dashboard = () => {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const [stats, setStats] = useState({
     upcomingAppointment: null,
     vaccinationStatus: 'Not Started',
@@ -14,8 +15,10 @@ const Dashboard = () => {
   });
 
   useEffect(() => {
-    fetchDashboardData();
-  }, []);
+    if (user) {
+      fetchDashboardData();
+    }
+  }, [user]);
 
   const fetchDashboardData = async () => {
     try {
@@ -140,44 +143,78 @@ const Dashboard = () => {
         </div>
       </section>
 
-      {/* Info Cards Section */}
-      <section className="py-16">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 0.2 }}
-            className="text-center mb-12"
-          >
-            <h2 className="text-3xl font-bold text-gray-900 mb-4">Your Health Dashboard</h2>
-            <p className="text-gray-600 max-w-2xl mx-auto">
-              Keep track of your vaccination journey and manage your healthcare needs
-            </p>
-          </motion.div>
+      {/* Info Cards Section - Only for logged in users */}
+      {user && (
+        <section className="py-16">
+          <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+            <motion.div
+              initial={{ opacity: 0, y: 30 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.8, delay: 0.2 }}
+              className="text-center mb-12"
+            >
+              <h2 className="text-3xl font-bold text-gray-900 mb-4">Your Health Dashboard</h2>
+              <p className="text-gray-600 max-w-2xl mx-auto">
+                Keep track of your vaccination journey and manage your healthcare needs
+              </p>
+            </motion.div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {infoCards.map((card, index) => (
-              <motion.div
-                key={card.title}
-                initial={{ opacity: 0, y: 30 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.8, delay: 0.1 * (index + 1) }}
-                className={`bg-white rounded-xl shadow-lg border p-6 hover:shadow-xl transition-shadow ${card.color}`}
-              >
-                <div className="flex items-center mb-4">
-                  <div className={`p-3 rounded-lg ${card.iconColor} bg-white`}>
-                    <card.icon className="w-6 h-6" />
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+              {infoCards.map((card, index) => (
+                <motion.div
+                  key={card.title}
+                  initial={{ opacity: 0, y: 30 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.8, delay: 0.1 * (index + 1) }}
+                  className={`bg-white rounded-xl shadow-lg border p-6 hover:shadow-xl transition-shadow ${card.color}`}
+                >
+                  <div className="flex items-center mb-4">
+                    <div className={`p-3 rounded-lg ${card.iconColor} bg-white`}>
+                      <card.icon className="w-6 h-6" />
+                    </div>
+                    <h3 className="text-lg font-semibold text-gray-900 ml-4">{card.title}</h3>
                   </div>
-                  <h3 className="text-lg font-semibold text-gray-900 ml-4">{card.title}</h3>
-                </div>
-                <div className="text-gray-700">
-                  {card.content}
-                </div>
-              </motion.div>
-            ))}
+                  <div className="text-gray-700">
+                    {card.content}
+                  </div>
+                </motion.div>
+              ))}
+            </div>
           </div>
-        </div>
-      </section>
+        </section>
+      )}
+
+      {/* Login Prompt for non-logged in users */}
+      {!user && (
+        <section className="py-16 bg-white">
+          <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+            <motion.div
+              initial={{ opacity: 0, y: 30 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.8, delay: 0.2 }}
+            >
+              <h2 className="text-3xl font-bold text-gray-900 mb-4">Access Your Health Dashboard</h2>
+              <p className="text-gray-600 mb-8 max-w-2xl mx-auto">
+                Login to view your vaccination status, manage appointments, and access personalized health services.
+              </p>
+              <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                <Link
+                  to="/login"
+                  className="inline-flex items-center justify-center px-8 py-4 bg-teal-600 text-white font-semibold rounded-lg hover:bg-teal-700 transition-colors shadow-lg"
+                >
+                  Login
+                </Link>
+                <Link
+                  to="/register"
+                  className="inline-flex items-center justify-center px-8 py-4 bg-white text-teal-600 font-semibold rounded-lg hover:bg-gray-50 transition-colors border-2 border-teal-600"
+                >
+                  Register
+                </Link>
+              </div>
+            </motion.div>
+          </div>
+        </section>
+      )}
 
       {/* Quick Actions Section */}
       <section className="py-16 bg-white">

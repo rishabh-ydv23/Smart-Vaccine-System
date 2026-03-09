@@ -13,6 +13,7 @@ const Certificate = () => {
   const [certificates, setCertificates] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedCertificate, setSelectedCertificate] = useState(null);
+  const [needsAuth, setNeedsAuth] = useState(false);
 
   useEffect(() => {
     fetchCertificates();
@@ -54,11 +55,11 @@ const Certificate = () => {
       
       setCertificates(certificateList);
     } catch (error) {
-      // If unauthenticated, redirect to login and preserve return
+      // If unauthenticated, set needsAuth flag instead of redirecting
       console.error('Certificate fetch error:', error);
       const status = error.response?.status;
       if (status === 401 || status === 403) {
-        navigate(`/login?next=${encodeURIComponent('/certificate')}`);
+        setNeedsAuth(true);
         return;
       }
 
@@ -209,7 +210,7 @@ For verification, scan the QR code on your digital certificate.
         <div className="space-y-6">
           {certificates.length === 0 ? (
             <div className="text-center py-16 bg-white rounded-xl shadow-lg border border-gray-200">
-              {!user ? (
+              {needsAuth || !user ? (
                 <div>
                   <div className="inline-flex items-center justify-center w-24 h-24 bg-gradient-to-r from-teal-400 to-blue-500 rounded-full mb-6 shadow-lg">
                     <FiAward className="w-12 h-12 text-white" />
