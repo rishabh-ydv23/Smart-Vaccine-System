@@ -4,11 +4,15 @@ import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
 import { FiCheck, FiChevronRight, FiCalendar, FiMapPin, FiClock } from 'react-icons/fi';
 import api from '../api/axios';
+import { useAuth } from '../context/AuthContext';
+import { useLocation, useNavigate } from 'react-router-dom';
 import toast, { Toaster } from 'react-hot-toast';
 
 const BookVaccine = () => {
   const [step, setStep] = useState(1);
   const [vaccines, setVaccines] = useState([]);
+  const [vaccinesLoading, setVaccinesLoading] = useState(false);
+  const [vaccinesError, setVaccinesError] = useState('');
   const [hospitals, setHospitals] = useState([]);
   const [selectedVaccine, setSelectedVaccine] = useState(null);
   const [selectedHospital, setSelectedHospital] = useState(null);
@@ -16,6 +20,9 @@ const BookVaccine = () => {
   const [selectedTime, setSelectedTime] = useState(null);
   const [loading, setLoading] = useState(false);
   const [showConfirmModal, setShowConfirmModal] = useState(false);
+  const { user } = useAuth();
+  const location = useLocation();
+  const navigate = useNavigate();
 
   useEffect(() => {
     fetchVaccines();
@@ -23,11 +30,20 @@ const BookVaccine = () => {
   }, []);
 
   const fetchVaccines = async () => {
+    setVaccinesLoading(true);
+    setVaccinesError('');
     try {
       const { data } = await api.get('/vaccines');
-      setVaccines(data);
+      setVaccines(data || []);
+      if (!data || data.length === 0) {
+        setVaccinesError('No vaccines available at the moment');
+      }
     } catch (error) {
+      console.error('Failed to load vaccines:', error);
+      setVaccinesError('Failed to load vaccines. Check server or network.');
       toast.error('Failed to load vaccines');
+    } finally {
+      setVaccinesLoading(false);
     }
   };
 
@@ -116,6 +132,17 @@ const BookVaccine = () => {
   };
 
   const handleConfirm = async () => {
+    if (!user) {
+      const params = new URLSearchParams();
+      params.set('action', 'confirmBooking');
+      params.set('vaccineId', selectedVaccine?._id || '');
+      params.set('hospitalId', selectedHospital?._id || '');
+      if (selectedDate) params.set('date', encodeURIComponent(selectedDate.toISOString()));
+      if (selectedTime) params.set('time', selectedTime);
+      navigate(`/login?next=${encodeURIComponent(`/book-vaccine?${params.toString()}`)}`);
+      return;
+    }
+
     setLoading(true);
     try {
       await api.post('/appointments', {
@@ -138,6 +165,55 @@ const BookVaccine = () => {
       setLoading(false);
     }
   };
+
+  // Handle resume actions from query params (preselect or confirm after login)
+  useEffect(() => {
+    try {
+      const params = new URLSearchParams(location.search);
+      const action = params.get('action');
+      if (!action) return;
+
+      if (action === 'preselect') {
+        const vaccineId = params.get('vaccineId');
+        const dateParam = params.get('date');
+        if (vaccineId && vaccines.length) {
+          const v = vaccines.find(vv => vv._id === vaccineId);
+          if (v) setSelectedVaccine(v);
+        }
+        if (dateParam) {
+          setSelectedDate(new Date(decodeURIComponent(dateParam)));
+        }
+        navigate('/book-vaccine', { replace: true });
+      }
+
+      if (action === 'confirmBooking' && user && vaccines.length && hospitals.length) {
+        const vaccineId = params.get('vaccineId');
+        const hospitalId = params.get('hospitalId');
+        const dateParam = params.get('date');
+        const timeParam = params.get('time');
+
+        if (vaccineId) {
+          const v = vaccines.find(vv => vv._id === vaccineId);
+          if (v) setSelectedVaccine(v);
+        }
+        if (hospitalId) {
+          const h = hospitals.find(hh => hh._id === hospitalId);
+          if (h) setSelectedHospital(h);
+        }
+        if (dateParam) setSelectedDate(new Date(decodeURIComponent(dateParam)));
+        if (timeParam) setSelectedTime(timeParam);
+
+        setShowConfirmModal(true);
+        setTimeout(() => {
+          handleConfirm();
+        }, 250);
+
+        navigate('/book-vaccine', { replace: true });
+      }
+    } catch (e) {
+      // ignore
+    }
+  }, [location.search, vaccines, hospitals, user]);
 
   const getAvailabilityColor = (availability) => {
     switch (availability) {
@@ -211,22 +287,38 @@ const BookVaccine = () => {
           {step === 1 && (
             <div>
               <h2 className="text-xl font-semibold mb-4">Select a Vaccine</h2>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {vaccines.map((vaccine) => (
-                  <div
-                    key={vaccine._id}
-                    onClick={() => setSelectedVaccine(vaccine)}
-                    className={`p-4 border-2 rounded-lg cursor-pointer transition-all ${
-                      selectedVaccine?._id === vaccine._id
-                        ? 'border-teal-500 bg-teal-50'
-                        : 'border-gray-200 hover:border-teal-300'
-                    }`}
-                  >
-                    <h3 className="font-semibold text-gray-900">{vaccine.name}</h3>
-                    <p className="text-sm text-gray-600 mt-1">{vaccine.description}</p>
+              {vaccinesLoading ? (
+                <div className="p-6 bg-white rounded-lg text-center">Loading vaccines...</div>
+              ) : vaccinesError ? (
+                <div className="p-6 bg-yellow-50 rounded-lg">
+                  <p className="text-sm text-yellow-800">{vaccinesError}</p>
+                  <div className="mt-3">
+                    <button
+                      onClick={fetchVaccines}
+                      className="px-4 py-2 bg-teal-500 text-white rounded-lg hover:bg-teal-600"
+                    >
+                      Retry
+                    </button>
                   </div>
-                ))}
-              </div>
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {vaccines.map((vaccine) => (
+                    <div
+                      key={vaccine._id}
+                      onClick={() => setSelectedVaccine(vaccine)}
+                      className={`p-4 border-2 rounded-lg cursor-pointer transition-all ${
+                        selectedVaccine?._id === vaccine._id
+                          ? 'border-teal-500 bg-teal-50'
+                          : 'border-gray-200 hover:border-teal-300'
+                      }`}
+                    >
+                      <h3 className="font-semibold text-gray-900">{vaccine.name}</h3>
+                      <p className="text-sm text-gray-600 mt-1">{vaccine.description}</p>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
           )}
 

@@ -2,12 +2,14 @@ import { useState } from "react";
 import api from "../api/axios";
 import { useAuth } from "../context/AuthContext";
 import { useNavigate } from "react-router-dom";
+import { useLocation } from "react-router-dom";
 import React from "react";
 import { FiMail, FiLock, FiShield } from "react-icons/fi";
 
 const Login = () => {
   const { login } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
   const [form, setForm] = useState({ email: "", password: "" });
   const [isAdminLogin, setIsAdminLogin] = useState(false);
   const [error, setError] = useState("");
@@ -56,14 +58,24 @@ const Login = () => {
       
       // Login with properly structured data
       login(userData);
-      
-      // Redirect based on user role
+
+      // If a `next` query param was provided, go there (preserve action params)
+      try {
+        const params = new URLSearchParams(location.search);
+        const next = params.get('next');
+        if (next) {
+          navigate(next);
+          return;
+        }
+      } catch (e) {
+        // fall back to role-based redirect
+      }
+
+      // Redirect based on user role (fallback)
       if (userData.role === 'admin') {
-        console.log("➡️ Redirecting to admin dashboard");
-        navigate("/admin");
+        navigate('/admin');
       } else {
-        console.log("➡️ Redirecting to user dashboard");
-        navigate("/");
+        navigate('/');
       }
     } catch (err) {
       console.error("❌ Login error:", err);

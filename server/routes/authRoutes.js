@@ -2,28 +2,27 @@ const express = require('express');
 const jwt = require('jsonwebtoken');
 const User = require('../models/User');
 const { normalizeEmail, createEmailQuery, sanitizeEmailForLogging } = require('../utils/emailUtils');
+const connectDB = require('../config/db'); // Import the updated DB connection with status check
 
 const router = express.Router();
-
-// Reference to db connection status
-let dbConnected = false;
-const setDbStatus = (status) => {
-  dbConnected = status;
-};
-router.setDbStatus = setDbStatus;
 
 const generateToken = (id, role) => {
   return jwt.sign({ id, role }, process.env.JWT_SECRET, { expiresIn: '7d' });
 };
 
-// Import the improved database connection checker
-const dbConnectionMiddleware = require('../middleware/dbConnectionChecker');
-
-// Use the improved middleware instead of the old checkDbConnection
-const checkDbConnection = dbConnectionMiddleware;
+// Custom middleware to check database connection status
+const checkDbConnection = (req, res, next) => {
+  if (!connectDB.isConnected()) {
+    return res.status(503).json({ 
+      message: 'Service temporarily unavailable. Database connection error.',
+      suggestion: 'Please try again later or contact system administrator.'
+    });
+  }
+  next();
+};
 
 // POST /api/auth/register
-router.post('/register', checkDbConnection, async (req, res) => {
+router.post('/register', async (req, res) => {
   try {
     const { name, email, password, governmentId, role } = req.body;
     
@@ -43,6 +42,14 @@ router.post('/register', checkDbConnection, async (req, res) => {
       return res.status(400).json({ 
         message: 'All fields are required',
         required: ['name', 'email', 'password', 'governmentId']
+      });
+    }
+
+    // Check if DB is connected before attempting to query
+    if (!connectDB.isConnected()) {
+      return res.status(503).json({ 
+        message: 'Service temporarily unavailable. Database connection error.',
+        suggestion: 'Please try again later when the database is available'
       });
     }
 
@@ -138,7 +145,7 @@ router.post('/register', checkDbConnection, async (req, res) => {
 });
 
 // POST /api/auth/login
-router.post('/login', checkDbConnection, async (req, res) => {
+router.post('/login', async (req, res) => {
   try {
     const { email, password } = req.body;
     
@@ -161,7 +168,53 @@ router.post('/login', checkDbConnection, async (req, res) => {
       });
     }
 
-    // Find user with case-insensitive email lookup
+    // Check if DB is connected before attempting to query
+    if (!connectDB.isConnected()) {
+      // For demo purposes, allow login with specific demo credentials when DB is down
+      if (normalizedEmail === 'demo@vaccine.com' && password === 'demopass') {
+        const mockUser = require('../mockData/users').findUserByEmail('demo@vaccine.com');
+        if (mockUser) {
+          const token = generateToken(mockUser._id, mockUser.role);
+          console.log('✅ Demo login successful for:', mockUser.email);
+          
+          return res.json({
+            user: {
+              _id: mockUser._id,
+              name: mockUser.name,
+              email: mockUser.email,
+              role: mockUser.role
+            },
+            isEmailVerified: mockUser.isEmailVerified,
+            token: token
+          });
+        }
+      } else if (normalizedEmail === 'admin@vaccine.com' && password === 'adminpass') {
+        const mockUser = require('../mockData/users').findUserByEmail('admin@vaccine.com');
+        if (mockUser) {
+          const token = generateToken(mockUser._id, mockUser.role);
+          console.log('✅ Demo admin login successful for:', mockUser.email);
+          
+          return res.json({
+            user: {
+              _id: mockUser._id,
+              name: mockUser.name,
+              email: mockUser.email,
+              role: mockUser.role
+            },
+            isEmailVerified: mockUser.isEmailVerified,
+            token: token
+          });
+        }
+      } else {
+        // If not using demo credentials, return appropriate error
+        return res.status(503).json({ 
+          message: 'Service temporarily unavailable. Database connection error.',
+          suggestion: 'Please try again later or use demo credentials: demo@vaccine.com / demopass'
+        });
+      }
+    }
+
+    // Find user with case-insensitive email lookup (only when DB is connected)
     const user = await User.findOne({ 
       email: { $regex: new RegExp(`^${normalizedEmail}$`, 'i') } 
     });

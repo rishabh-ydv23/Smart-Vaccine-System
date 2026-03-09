@@ -257,6 +257,128 @@ const vaccines = [
       pinCode: '144401'
     }
   }
+  ,
+  // Additional vaccines requested
+  {
+    name: 'BCG – Tuberculosis (TB)',
+    doseRequired: 1,
+    availableQuantity: 120,
+    location: {
+      type: 'Point',
+      coordinates: [77.2088, 28.6139],
+      address: '123 Healthcare Ave',
+      city: 'New Delhi',
+      pinCode: '110001'
+    }
+  },
+  {
+    name: 'OPV (Oral Polio Vaccine) – Polio',
+    doseRequired: 3,
+    availableQuantity: 150,
+    location: {
+      type: 'Point',
+      coordinates: [77.22634, 28.63493],
+      address: '456 Medical Plaza',
+      city: 'New Delhi',
+      pinCode: '110001'
+    }
+  },
+  {
+    name: 'IPV (Inactivated Polio Vaccine) – Polio',
+    doseRequired: 2,
+    availableQuantity: 100,
+    location: {
+      type: 'Point',
+      coordinates: [77.2599, 28.5952],
+      address: '789 Wellness St',
+      city: 'New Delhi',
+      pinCode: '110048'
+    }
+  },
+  {
+    name: 'HPV Vaccine – Human Papillomavirus',
+    doseRequired: 2,
+    availableQuantity: 70,
+    location: {
+      type: 'Point',
+      coordinates: [77.2300, 28.6400],
+      address: '78 Prevention Ave',
+      city: 'New Delhi',
+      pinCode: '110005'
+    }
+  },
+  {
+    name: 'Rabies Vaccine – Rabies',
+    doseRequired: 3,
+    availableQuantity: 40,
+    location: {
+      type: 'Point',
+      coordinates: [77.2600, 28.6700],
+      address: '202 Emergency Ave',
+      city: 'New Delhi',
+      pinCode: '110008'
+    }
+  },
+  {
+    name: 'Typhoid Vaccine – Typhoid',
+    doseRequired: 1,
+    availableQuantity: 110,
+    location: {
+      type: 'Point',
+      coordinates: [77.2700, 28.6800],
+      address: '303 Sanitation St',
+      city: 'New Delhi',
+      pinCode: '110009'
+    }
+  },
+  {
+    name: 'COVID-19 Vaccine (Covaxin)',
+    doseRequired: 2,
+    availableQuantity: 140,
+    location: {
+      type: 'Point',
+      coordinates: [77.2088, 28.6139],
+      address: '123 Healthcare Ave',
+      city: 'New Delhi',
+      pinCode: '110001'
+    }
+  },
+  {
+    name: 'COVID-19 Vaccine (Covishield)',
+    doseRequired: 2,
+    availableQuantity: 160,
+    location: {
+      type: 'Point',
+      coordinates: [77.22634, 28.63493],
+      address: '456 Medical Plaza',
+      city: 'New Delhi',
+      pinCode: '110001'
+    }
+  },
+  {
+    name: 'Pneumococcal Vaccine (PCV) – Pneumonia',
+    doseRequired: 3,
+    availableQuantity: 75,
+    location: {
+      type: 'Point',
+      coordinates: [77.2800, 28.6900],
+      address: '404 Lungs Rd',
+      city: 'New Delhi',
+      pinCode: '110010'
+    }
+  },
+  {
+    name: 'Rotavirus Vaccine – Rotavirus infection',
+    doseRequired: 2,
+    availableQuantity: 95,
+    location: {
+      type: 'Point',
+      coordinates: [77.2900, 28.7000],
+      address: '505 Infant Care',
+      city: 'New Delhi',
+      pinCode: '110011'
+    }
+  }
 ];
 
 const seedVaccines = async () => {

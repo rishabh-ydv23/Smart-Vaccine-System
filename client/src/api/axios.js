@@ -13,4 +13,23 @@ api.interceptors.request.use((config) => {
   return config;
 });
 
+// Handle responses and errors
+api.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    // Handle 503 errors (service unavailable)
+    if (error.response?.status === 503) {
+      console.error('Service temporarily unavailable:', error.response.data.message);
+      // You could show a user-friendly message here
+    }
+    // Handle 401 errors (unauthorized)
+    else if (error.response?.status === 401) {
+      console.error('Authentication failed:', error.response.data.message);
+      // Optionally, clear user data and redirect to login
+      localStorage.removeItem('user');
+    }
+    return Promise.reject(error);
+  }
+);
+
 export default api;

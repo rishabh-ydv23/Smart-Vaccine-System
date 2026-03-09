@@ -61,7 +61,9 @@ router.post('/', protect, async (req, res) => {
     vaccine.availableQuantity -= 1;
     await vaccine.save();
 
-    res.status(201).json(appointment);
+    // Return the created appointment with populated vaccine name for client convenience
+    const populatedAppointment = await Appointment.findById(appointment._id).populate('vaccineId', 'name');
+    res.status(201).json(populatedAppointment);
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: 'Server error' });

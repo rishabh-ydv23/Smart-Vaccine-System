@@ -1,16 +1,36 @@
 const express = require('express');
 const Vaccine = require('../models/Vaccine');
 const { protect, adminOnly } = require('../middleware/authMiddleware');
+const connectDB = require('../config/db');
 
 const router = express.Router();
 
 // GET /api/vaccines - public (or protect, as you wish)
 router.get('/', async (req, res) => {
+  // Check if DB is connected before attempting to query
+  if (!connectDB.isConnected()) {
+    // Return mock data when DB is not connected
+    const mockVaccines = require('../mockData/vaccines');
+    console.log('⚠️ Database not connected, serving mock vaccine data');
+    return res.json(mockVaccines);
+  }
+  
   try {
     const vaccines = await Vaccine.find();
     res.json(vaccines);
   } catch (err) {
-    res.status(500).json({ message: 'Server error' });
+    console.error('Vaccine fetch error:', err);
+    // Check if it's a connection error
+    if (err.name === 'MongoServerSelectionError' || err.message.includes('ECONNREFUSED') || err.message.includes('failed to connect')) {
+      // Even if there's a connection error during the query, try to return mock data
+      const mockVaccines = require('../mockData/vaccines');
+      console.log('⚠️ Database error during query, serving mock vaccine data');
+      return res.json(mockVaccines);
+    }
+    res.status(500).json({ 
+      message: 'Server error while fetching vaccines', 
+      error: process.env.NODE_ENV === 'development' ? err.message : 'Database error' 
+    });
   }
 });
 

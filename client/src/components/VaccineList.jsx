@@ -1,11 +1,15 @@
 import React, { useEffect, useState } from "react";
 import api from "../api/axios";
+import { useAuth } from '../context/AuthContext';
+import { useNavigate } from 'react-router-dom';
 
 const VaccineList = ({ refreshAppointments }) => {
   const [vaccines, setVaccines] = useState([]);
   const [selected, setSelected] = useState("");
   const [date, setDate] = useState("");
   const [bookedSlots, setBookedSlots] = useState([]);
+  const { user } = useAuth();
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchVaccines = async () => {
@@ -22,6 +26,11 @@ const VaccineList = ({ refreshAppointments }) => {
 
   const bookAppointment = async () => {
     if (!selected || !date) return alert("Please select vaccine and date.");
+
+    if (!user) {
+      navigate(`/login?next=${encodeURIComponent(`/book-vaccine?action=preselect&vaccineId=${selected}&date=${encodeURIComponent(date)}`)}`);
+      return;
+    }
 
     try {
       await api.post("/appointments", { vaccineId: selected, date });

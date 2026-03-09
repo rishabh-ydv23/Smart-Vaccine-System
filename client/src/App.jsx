@@ -1,5 +1,5 @@
 import React from "react";
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate, useLocation } from "react-router-dom";
 import { AuthProvider, useAuth } from "./context/AuthContext";
 
 import Login from "./pages/Login";
@@ -16,7 +16,17 @@ import Navigation from "./components/Navigation";
 
 const PrivateRoute = ({ children }) => {
   const { user } = useAuth();
-  return user ? children : <Navigate to="/login" replace />;
+  const location = useLocation();
+  if (!user) {
+    const next = encodeURIComponent(location.pathname + location.search);
+    return <Navigate to={`/login?next=${next}`} replace />;
+  }
+  return (
+    <>
+      <Navigation />
+      {children}
+    </>
+  );
 };
 
 const AdminRoute = ({ children }) => {
@@ -26,25 +36,13 @@ const AdminRoute = ({ children }) => {
   return children;
 };
 
-const UserRoute = ({ children }) => {
-  const { user } = useAuth();
-  if (!user) return <Navigate to="/login" replace />;
-  if (user.role === 'admin') return <Navigate to="/admin" replace />;
-  return (
-    <>
-      <Navigation />
-      {children}
-    </>
-  );
-};
-
-const PublicRoute = ({ children }) => {
-  const { user } = useAuth();
-  if (!user) return children;
-  // Redirect based on role
-  if (user.role === 'admin') return <Navigate to="/admin" replace />;
-  return <Navigate to="/" replace />;
-};
+// Simple layout for public pages with navigation
+const Layout = ({ children }) => (
+  <>
+    <Navigation />
+    {children}
+  </>
+);
 
 function App() {
   return (
@@ -56,15 +54,15 @@ function App() {
         }}
       >
         <Routes>
-          <Route path="/login" element={<PublicRoute><Login /></PublicRoute>} />
-          <Route path="/register" element={<PublicRoute><Register /></PublicRoute>} />
-          <Route path="/" element={<UserRoute><Dashboard /></UserRoute>} />
-          <Route path="/book-vaccine" element={<UserRoute><BookVaccine /></UserRoute>} />
-          <Route path="/doctor-consultation" element={<UserRoute><DoctorConsultation /></UserRoute>} />
-          <Route path="/appointments" element={<UserRoute><MyAppointments /></UserRoute>} />
-          <Route path="/nearby-hospitals" element={<UserRoute><NearbyHospitals /></UserRoute>} />
-          <Route path="/certificate" element={<UserRoute><Certificate /></UserRoute>} />
-          <Route path="/profile" element={<UserRoute><Profile /></UserRoute>} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/register" element={<Register />} />
+          <Route path="/" element={<Layout><Dashboard /></Layout>} />
+          <Route path="/book-vaccine" element={<Layout><BookVaccine /></Layout>} />
+          <Route path="/doctor-consultation" element={<Layout><DoctorConsultation /></Layout>} />
+          <Route path="/appointments" element={<PrivateRoute><MyAppointments /></PrivateRoute>} />
+          <Route path="/nearby-hospitals" element={<Layout><NearbyHospitals /></Layout>} />
+          <Route path="/certificate" element={<Layout><Certificate /></Layout>} />
+          <Route path="/profile" element={<PrivateRoute><Profile /></PrivateRoute>} />
           <Route path="/admin" element={<AdminRoute><AdminDashboard /></AdminRoute>} />
         </Routes>
       </BrowserRouter>

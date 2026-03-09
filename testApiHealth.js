@@ -1,25 +1,44 @@
+/**
+ * Test API Health - Checks if the API endpoints are accessible
+ */
+
 const axios = require('axios');
 
+const API_BASE_URL = 'http://localhost:5000';
+
 const testApiHealth = async () => {
+  console.log('🔍 Testing API Health...\n');
+  
   try {
-    console.log('Testing API health...');
-    
-    // Test basic API endpoint
-    const healthResponse = await axios.get('http://localhost:5000/health');
-    console.log('Health check:', healthResponse.data);
-    
-    // Test main API endpoint
-    const mainResponse = await axios.get('http://localhost:5000/');
-    console.log('Main endpoint:', mainResponse.data);
-    
-    console.log('API is running!');
+    // Test health endpoint
+    console.log('1. Testing health endpoint...');
+    const healthResponse = await axios.get(`${API_BASE_URL}/health`);
+    console.log('✅ Health check passed:', healthResponse.data.status);
   } catch (error) {
-    if (error.response) {
-      console.log('API responded with error:', error.response.status, error.response.data);
-    } else {
-      console.log('API is not accessible:', error.message);
-    }
+    console.log('❌ Health check failed:', error.message);
   }
+
+  console.log('\n2. Testing vaccines endpoint (public)...');
+  try {
+    const vaccinesResponse = await axios.get(`${API_BASE_URL}/api/vaccines`);
+    console.log('✅ Vaccines endpoint status:', vaccinesResponse.status);
+    console.log('📦 Vaccines count:', vaccinesResponse.data.length || 'N/A');
+  } catch (error) {
+    console.log('❌ Vaccines endpoint failed:', error.response?.status, error.response?.data?.message || error.message);
+  }
+
+  console.log('\n3. Testing appointments/my endpoint (requires auth)...');
+  try {
+    // This will fail without auth token
+    const appointmentsResponse = await axios.get(`${API_BASE_URL}/api/appointments/my`, {
+      headers: { 'Authorization': 'Bearer invalid-token' }
+    });
+    console.log('✅ Appointments endpoint accessible:', appointmentsResponse.status);
+  } catch (error) {
+    console.log('Expected - Appointments endpoint failed (needs valid auth):', error.response?.status, error.response?.data?.message || error.message);
+  }
+
+  console.log('\n📋 API Health Check Complete');
 };
 
 testApiHealth();

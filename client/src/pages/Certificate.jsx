@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { FiDownload, FiShare2, FiAward, FiCheckCircle, FiCalendar, FiArrowRight } from 'react-icons/fi';
 import { useAuth } from '../context/AuthContext';
 import api from '../api/axios';
@@ -8,6 +8,8 @@ import toast, { Toaster } from 'react-hot-toast';
 
 const Certificate = () => {
   const { user } = useAuth();
+  const navigate = useNavigate();
+  const location = useLocation();
   const [certificates, setCertificates] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedCertificate, setSelectedCertificate] = useState(null);
@@ -52,14 +54,26 @@ const Certificate = () => {
       
       setCertificates(certificateList);
     } catch (error) {
-      toast.error('Failed to load certificates');
+      // If unauthenticated, redirect to login and preserve return
       console.error('Certificate fetch error:', error);
+      const status = error.response?.status;
+      if (status === 401 || status === 403) {
+        navigate(`/login?next=${encodeURIComponent('/certificate')}`);
+        return;
+      }
+
+      toast.error('Failed to load certificates');
     } finally {
       setLoading(false);
     }
   };
 
   const handleDownload = (certificate) => {
+    if (!user) {
+      navigate(`/login?next=${encodeURIComponent(`/certificate?action=download&certId=${certificate._id}`)}`);
+      return;
+    }
+
     // Create a more detailed certificate content
     const certificateContent = `
 VACCINATION CERTIFICATE
@@ -104,6 +118,11 @@ For verification, scan the QR code on your digital certificate.
   };
 
   const handleShare = (certificate) => {
+    if (!user) {
+      navigate(`/login?next=${encodeURIComponent(`/certificate?action=share&certId=${certificate._id}`)}`);
+      return;
+    }
+
     const shareText = `I've been vaccinated with ${certificate.vaccineName}. View my vaccination certificate: ${window.location.origin}/certificate/${certificate._id}`;
     
     if (navigator.share) {
@@ -123,6 +142,33 @@ For verification, scan the QR code on your digital certificate.
       toast.success('Certificate link copied to clipboard');
     }
   };
+
+  // Resume actions after login if `action` query param present
+  useEffect(() => {
+    if (loading) return;
+    if (!user) return;
+
+    try {
+      const params = new URLSearchParams(location.search);
+      const action = params.get('action');
+      const certId = params.get('certId');
+      if (!action || !certId) return;
+
+      const certificate = certificates.find(c => c._id === certId);
+      if (!certificate) return;
+
+      if (action === 'download') {
+        handleDownload(certificate);
+      } else if (action === 'share') {
+        handleShare(certificate);
+      }
+
+      // remove query params
+      navigate('/certificate', { replace: true });
+    } catch (e) {
+      // ignore
+    }
+  }, [user, loading, certificates, location.search]);
 
   const formatDate = (dateString) => {
     return new Date(dateString).toLocaleDateString('en-US', {
@@ -163,45 +209,68 @@ For verification, scan the QR code on your digital certificate.
         <div className="space-y-6">
           {certificates.length === 0 ? (
             <div className="text-center py-16 bg-white rounded-xl shadow-lg border border-gray-200">
-              <div className="inline-flex items-center justify-center w-20 h-20 bg-blue-100 rounded-full mb-6">
-                <FiAward className="w-10 h-10 text-blue-600" />
-              </div>
-              <h3 className="text-2xl font-bold text-gray-900 mb-3">No Certificates Available</h3>
-              <p className="text-gray-600 max-w-md mx-auto mb-8">
-                You don't have any vaccination certificates yet. Certificates are issued after completing your vaccination appointments.
-              </p>
-              <div className="bg-blue-50 rounded-lg p-6 max-w-2xl mx-auto">
-                <h4 className="font-semibold text-blue-900 mb-3">How to get your certificates:</h4>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  <div className="text-center">
-                    <div className="w-12 h-12 bg-teal-100 rounded-full flex items-center justify-center mx-auto mb-3">
-                      <span className="text-teal-600 font-bold">1</span>
-                    </div>
-                    <p className="text-sm text-gray-700">Book your vaccination appointment</p>
+              {!user ? (
+                <div>
+                  <div className="inline-flex items-center justify-center w-24 h-24 bg-gradient-to-r from-teal-400 to-blue-500 rounded-full mb-6 shadow-lg">
+                    <FiAward className="w-12 h-12 text-white" />
                   </div>
-                  <div className="text-center">
-                    <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-3">
-                      <span className="text-blue-600 font-bold">2</span>
-                    </div>
-                    <p className="text-sm text-gray-700">Complete your vaccination</p>
-                  </div>
-                  <div className="text-center">
-                    <div className="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-3">
-                      <span className="text-purple-600 font-bold">3</span>
-                    </div>
-                    <p className="text-sm text-gray-700">Receive your certificate automatically</p>
+                  <h3 className="text-3xl font-bold text-gray-900 mb-3">Your Certificates</h3>
+                  <p className="text-gray-600 max-w-md mx-auto mb-6">
+                    Sign in to view and download your vaccination certificates securely.
+                  </p>
+                  <div className="flex items-center justify-center space-x-3">
+                    <button
+                      onClick={() => navigate(`/login?next=${encodeURIComponent('/certificate')}`)}
+                      className="px-8 py-3 bg-gradient-to-r from-teal-500 to-blue-500 text-white font-semibold rounded-lg shadow-lg hover:scale-[1.02] transition-transform"
+                    >
+                      Sign in to view certificates
+                    </button>
+                    <Link to="/register" className="px-6 py-3 border border-teal-500 text-teal-600 rounded-lg font-medium">Create account</Link>
                   </div>
                 </div>
-              </div>
-              <div className="mt-8">
-                <Link 
-                  to="/book-vaccine" 
-                  className="inline-flex items-center px-6 py-3 bg-gradient-to-r from-teal-500 to-blue-500 text-white font-semibold rounded-lg shadow-md hover:from-teal-600 hover:to-blue-600 transition-all"
-                >
-                  Book Vaccination
-                  <FiArrowRight className="ml-2" />
-                </Link>
-              </div>
+              ) : (
+                <div>
+                  <div className="inline-flex items-center justify-center w-20 h-20 bg-blue-100 rounded-full mb-6">
+                    <FiAward className="w-10 h-10 text-blue-600" />
+                  </div>
+                  <h3 className="text-2xl font-bold text-gray-900 mb-3">No Certificates Available</h3>
+                  <p className="text-gray-600 max-w-md mx-auto mb-8">
+                    You don't have any vaccination certificates yet. Certificates are issued after completing your vaccination appointments.
+                  </p>
+                  <div className="bg-blue-50 rounded-lg p-6 max-w-2xl mx-auto">
+                    <h4 className="font-semibold text-blue-900 mb-3">How to get your certificates:</h4>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                      <div className="text-center">
+                        <div className="w-12 h-12 bg-teal-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                          <span className="text-teal-600 font-bold">1</span>
+                        </div>
+                        <p className="text-sm text-gray-700">Book your vaccination appointment</p>
+                      </div>
+                      <div className="text-center">
+                        <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                          <span className="text-blue-600 font-bold">2</span>
+                        </div>
+                        <p className="text-sm text-gray-700">Complete your vaccination</p>
+                      </div>
+                      <div className="text-center">
+                        <div className="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                          <span className="text-purple-600 font-bold">3</span>
+                        </div>
+                        <p className="text-sm text-gray-700">Receive your certificate automatically</p>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="mt-8">
+                    <Link 
+                      to="/book-vaccine" 
+                      className="inline-flex items-center px-6 py-3 bg-gradient-to-r from-teal-500 to-blue-500 text-white font-semibold rounded-lg shadow-md hover:from-teal-600 hover:to-blue-600 transition-all"
+                    >
+                      Book Vaccination
+                      <FiArrowRight className="ml-2" />
+                    </Link>
+                  </div>
+                </div>
+              )}
             </div>
           ) : (
             certificates.map((certificate, index) => (
