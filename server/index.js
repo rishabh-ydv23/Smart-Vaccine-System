@@ -24,6 +24,7 @@ app.use(cors({
       'http://localhost:5174', 
       'http://localhost:5176',
       'http://localhost:5177',
+      'http://localhost:5179',
       process.env.CLIENT_URL || 'https://smart-vaccine-system.onrender.com'
     ];
     
