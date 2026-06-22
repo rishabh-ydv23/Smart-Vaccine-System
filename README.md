@@ -141,6 +141,7 @@ A comprehensive **full-stack vaccine management system** that enables users to b
 - MongoDB
 - npm / yarn
 
+
 ### Backend Setup
 ```bash
 cd server
@@ -164,6 +165,7 @@ Password: admin123
 
 (You can change these via environment variables.)
 
+
 🔒 Security Notes
 Use strong passwords in production
 
@@ -174,6 +176,7 @@ Enable HTTPS
 Protect environment variables
 
 Keep dependencies updated
+
 
 👨‍💻 Author
 Rishabh Yaduvanshi
@@ -191,6 +194,3 @@ Lovely Professional University
 3. **Paste this**
 4. Click **Preview** (everything will render)
 5. **Commit changes**
-
-Your repository is now **internship + placement ready** 🚀  
-If you want badges, deployment section, or architecture diagram — just tell me.
